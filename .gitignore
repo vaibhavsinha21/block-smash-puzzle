@@ -9,3 +9,6 @@ ios/DerivedData/
 *.jks
 *.p12
 dist/
+signing.properties
+block-smash-release.keystore
+local.properties
