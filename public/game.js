@@ -347,17 +347,23 @@
   }
 
   // ---- ADMOB INTEGRATION (Capacitor) ----
+  // NOTE: Replace placeholder IDs with real AdMob IDs before enabling ads
+  const ADMOB_ENABLED = false; // Set to true once you have real AdMob ad unit IDs
+  const ADMOB_BANNER_ID = 'ca-app-pub-XXXXXXXXXXXXX/XXXXXXXXXX'; // Replace with your Banner Ad Unit ID
+  const ADMOB_INTERSTITIAL_ID = 'ca-app-pub-XXXXXXXXXXXXX/XXXXXXXXXX'; // Replace with your Interstitial Ad Unit ID
+  const ADMOB_REWARDED_ID = 'ca-app-pub-XXXXXXXXXXXXX/XXXXXXXXXX'; // Replace with your Rewarded Ad Unit ID
+
   const AdMob = {
     isNative: typeof window.Capacitor !== 'undefined',
     interstitialCount: 0,
     INTERSTITIAL_EVERY: 3,
 
     async init() {
-      if (!this.isNative) return;
+      if (!this.isNative || !ADMOB_ENABLED) return;
       try {
         const { AdMob: CapAdMob } = await import('@capacitor-community/admob');
         this.plugin = CapAdMob;
-        await this.plugin.initialize({ initializeForTesting: true });
+        await this.plugin.initialize({ initializeForTesting: false });
         this.showBanner();
       } catch(e) { console.log('AdMob not available:', e.message); }
     },
@@ -366,7 +372,7 @@
       if (!this.plugin) return;
       try {
         await this.plugin.showBanner({
-          adId: 'ca-app-pub-XXXXXXXXXXXXX/XXXXXXXXXX', // Replace with your Ad Unit ID
+          adId: ADMOB_BANNER_ID,
           adSize: 'BANNER',
           position: 'BOTTOM_CENTER',
         });
@@ -378,9 +384,7 @@
       this.interstitialCount++;
       if (this.interstitialCount % this.INTERSTITIAL_EVERY !== 0) return;
       try {
-        await this.plugin.prepareInterstitial({
-          adId: 'ca-app-pub-XXXXXXXXXXXXX/XXXXXXXXXX', // Replace with your Ad Unit ID
-        });
+        await this.plugin.prepareInterstitial({ adId: ADMOB_INTERSTITIAL_ID });
         await this.plugin.showInterstitial();
       } catch(e) {}
     },
@@ -388,9 +392,7 @@
     async showRewarded() {
       if (!this.plugin) return;
       try {
-        await this.plugin.prepareRewardVideoAd({
-          adId: 'ca-app-pub-XXXXXXXXXXXXX/XXXXXXXXXX', // Replace with your Ad Unit ID
-        });
+        await this.plugin.prepareRewardVideoAd({ adId: ADMOB_REWARDED_ID });
         const result = await this.plugin.showRewardVideoAd();
         return result.type === 'earned';
       } catch(e) { return false; }
@@ -533,6 +535,7 @@
     document.addEventListener('mouseup', onDragEnd);
     document.addEventListener('touchmove', onDragMove, { passive: false });
     document.addEventListener('touchend', onDragEnd);
+    document.addEventListener('touchcancel', onDragEnd);
   }
 
   function moveGhost(e) {
@@ -568,6 +571,7 @@
     document.removeEventListener('mouseup', onDragEnd);
     document.removeEventListener('touchmove', onDragMove);
     document.removeEventListener('touchend', onDragEnd);
+    document.removeEventListener('touchcancel', onDragEnd);
     ghostEl.style.display = 'none';
     clearPreview();
 
@@ -1147,10 +1151,29 @@
     // Update undo button state
     updateUndoButton();
 
-    // Register Service Worker
-    if ('serviceWorker' in navigator) {
+    // Register Service Worker (web only, not in Capacitor)
+    if ('serviceWorker' in navigator && !window.Capacitor) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
+
+    // Android back button handling (Capacitor)
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+      window.Capacitor.Plugins.App.addListener('backButton', () => {
+        // Close any open modal first
+        if ($('stats-modal').classList.contains('show')) { $('stats-modal').classList.remove('show'); return; }
+        if ($('settings-modal').classList.contains('show')) { $('settings-modal').classList.remove('show'); return; }
+        if ($('leaderboard-modal') && $('leaderboard-modal').classList.contains('show')) { $('leaderboard-modal').classList.remove('show'); return; }
+        if ($('tutorial-overlay') && $('tutorial-overlay').classList.contains('show')) { dismissTutorial(); return; }
+        if ($('level-up-overlay').classList.contains('show')) { $('level-up-overlay').classList.remove('show'); return; }
+        if (gameOverEl.classList.contains('show')) { restart(); return; }
+        // If nothing is open, minimize app (don't exit)
+        window.Capacitor.Plugins.App.minimizeApp();
+      });
+    }
+
+    // Prevent pinch-to-zoom on Android WebView
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('dblclick', e => e.preventDefault());
   }
 
   // Start when DOM is ready
