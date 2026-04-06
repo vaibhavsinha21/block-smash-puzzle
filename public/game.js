@@ -9,6 +9,57 @@
   const BOARD_SIZE = 8;
   const COLORS = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#a855f7','#f97316','#06b6d4','#ec4899'];
 
+  // ---- LEVEL / PROGRESSION CONFIG ----
+  // XP thresholds for each level (level 1 = 0 XP, level 2 = 200 XP, etc.)
+  const LEVEL_THRESHOLDS = [0];
+  for (let i = 1; i <= 100; i++) LEVEL_THRESHOLDS.push(Math.floor(150 * Math.pow(1.18, i)));
+  const LEVEL_TITLES = [
+    'Rookie','Rookie','Beginner','Beginner','Learner','Learner',
+    'Player','Player','Skilled','Skilled','Expert','Expert',
+    'Pro','Pro','Master','Master','Champion','Champion','Legend','Legend',
+    'Grandmaster'
+  ];
+  function getLevelTitle(lvl) { return LEVEL_TITLES[Math.min(lvl, LEVEL_TITLES.length - 1)]; }
+
+  // ---- MILESTONE DEFINITIONS (Variable Ratio Rewards) ----
+  const MILESTONES = [
+    { id:'first_clear', name:'First Clear', desc:'Clear your first line', icon:'⭐', check: s => s.lifetimeLines >= 1 },
+    { id:'combo_2', name:'Double Trouble', desc:'Get a 2x combo', icon:'🔥', check: s => s.maxCombo >= 2 },
+    { id:'score_500', name:'Rising Star', desc:'Score 500 in one game', icon:'🌟', check: s => s.bestScore >= 500 },
+    { id:'lines_10', name:'Line Crusher', desc:'Clear 10 lines total', icon:'💎', check: s => s.lifetimeLines >= 10 },
+    { id:'combo_3', name:'Triple Threat', desc:'Get a 3x combo', icon:'💥', check: s => s.maxCombo >= 3 },
+    { id:'score_1000', name:'Block Master', desc:'Score 1,000 in one game', icon:'👑', check: s => s.bestScore >= 1000 },
+    { id:'games_5', name:'Hooked!', desc:'Play 5 games', icon:'🎮', check: s => s.gamesPlayed >= 5 },
+    { id:'lines_50', name:'Line Legend', desc:'Clear 50 lines total', icon:'⚡', check: s => s.lifetimeLines >= 50 },
+    { id:'combo_4', name:'Quad Wrecker', desc:'Get a 4x combo', icon:'🌈', check: s => s.maxCombo >= 4 },
+    { id:'score_2500', name:'Puzzle Prodigy', desc:'Score 2,500 in one game', icon:'🏆', check: s => s.bestScore >= 2500 },
+    { id:'games_25', name:'Addicted!', desc:'Play 25 games', icon:'💊', check: s => s.gamesPlayed >= 25 },
+    { id:'lines_200', name:'Line Overlord', desc:'Clear 200 lines total', icon:'🔱', check: s => s.lifetimeLines >= 200 },
+    { id:'score_5000', name:'Block God', desc:'Score 5,000 in one game', icon:'🌠', check: s => s.bestScore >= 5000 },
+    { id:'streak_3', name:'Consistent!', desc:'Play 3 days in a row', icon:'📅', check: s => s.longestStreak >= 3 },
+    { id:'streak_7', name:'Week Warrior', desc:'Play 7 days in a row', icon:'🗓️', check: s => s.longestStreak >= 7 },
+    { id:'combo_6', name:'GODLIKE', desc:'Get a 6x combo', icon:'👁️', check: s => s.maxCombo >= 6 },
+  ];
+
+  // ---- DAILY CHALLENGE DEFINITIONS ----
+  function getDailyChallenge() {
+    const today = new Date().toDateString();
+    // Seed from date for deterministic daily challenge
+    let seed = 0;
+    for (let i = 0; i < today.length; i++) seed = ((seed << 5) - seed + today.charCodeAt(i)) | 0;
+    seed = Math.abs(seed);
+    const challenges = [
+      { name: 'Line Blitz', desc: 'Clear 5 lines in one game', icon: '⚡', target: 5, stat: 'lines' },
+      { name: 'Score Rush', desc: 'Score 800 points', icon: '🎯', target: 800, stat: 'score' },
+      { name: 'Combo King', desc: 'Get a 3x combo', icon: '🔥', target: 3, stat: 'combo' },
+      { name: 'Line Mania', desc: 'Clear 8 lines in one game', icon: '💥', target: 8, stat: 'lines' },
+      { name: 'High Roller', desc: 'Score 1,500 points', icon: '💰', target: 1500, stat: 'score' },
+      { name: 'Combo Master', desc: 'Get a 4x combo', icon: '👑', target: 4, stat: 'combo' },
+      { name: 'Marathon', desc: 'Clear 12 lines in one game', icon: '🏃', target: 12, stat: 'lines' },
+    ];
+    return { ...challenges[seed % challenges.length], date: today };
+  }
+
   // ---- PIECE DEFINITIONS ----
   const PIECE_DEFS = [
     {s:[[1]],w:1}, {s:[[1,1]],w:1}, {s:[[1],[1]],w:1},
@@ -39,11 +90,47 @@
   let score = 0;
   let bestScore = parseInt(localStorage.getItem('blockSmashBest') || '0');
   let combo = 0;
+  let maxCombo = 0;
   let totalLinesCleared = 0;
   let gamesPlayed = parseInt(localStorage.getItem('bsGamesPlayed') || '0');
   let draggingIdx = -1;
   let gameActive = true;
   let isNewRecord = false;
+
+  // ---- PERSISTENT STATS (Endowed Progress + Loss Aversion) ----
+  let stats = JSON.parse(localStorage.getItem('bsStats') || 'null') || {
+    lifetimeScore: 0,
+    lifetimeLines: 0,
+    lifetimeGames: 0,
+    lifetimePieces: 0,
+    bestScore: 0,
+    maxCombo: 0,
+    xp: 0,
+    level: 1,
+    unlockedMilestones: [],
+    currentStreak: 0,
+    longestStreak: 0,
+    lastPlayDate: null,
+    dailyChallengeDate: null,
+    dailyChallengeComplete: false,
+    dailyChallengesCompleted: 0,
+  };
+  function saveStats() { localStorage.setItem('bsStats', JSON.stringify(stats)); }
+
+  // ---- STREAK TRACKER (Commitment/Consistency) ----
+  function updateStreak() {
+    const today = new Date().toDateString();
+    if (stats.lastPlayDate === today) return; // already counted today
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    if (stats.lastPlayDate === yesterday) {
+      stats.currentStreak++;
+    } else if (stats.lastPlayDate !== today) {
+      stats.currentStreak = 1;
+    }
+    stats.longestStreak = Math.max(stats.longestStreak, stats.currentStreak);
+    stats.lastPlayDate = today;
+    saveStats();
+  }
 
   // ---- DOM ----
   const $ = id => document.getElementById(id);
@@ -329,11 +416,13 @@
       placePiece(dragPiece, lastPreviewR, lastPreviewC);
       const cellCount = countCells(dragPiece);
       pieces[draggingIdx] = null;
+      stats.lifetimePieces++;
       sfxPlace(); vibrate(12);
 
       const cleared = checkAndClearLines();
       if (cleared > 0) {
         combo++;
+        maxCombo = Math.max(maxCombo, combo);
         totalLinesCleared += cleared;
         const pts = cleared * BOARD_SIZE * 10 * Math.max(1, combo);
         addScore(pts);
@@ -436,6 +525,175 @@
       isNewRecord = true;
     }
     showScoreFloat('+' + pts);
+    // Update daily challenge progress in real-time
+    updateDailyUI();
+  }
+
+  // ---- XP & LEVELING (Endowed Progress Effect) ----
+  function addXP(amount) {
+    const oldLevel = stats.level;
+    stats.xp += amount;
+    // Check for level up
+    while (stats.level < LEVEL_THRESHOLDS.length - 1 && stats.xp >= LEVEL_THRESHOLDS[stats.level]) {
+      stats.level++;
+    }
+    saveStats();
+    updateLevelUI();
+    if (stats.level > oldLevel) showLevelUp(stats.level);
+  }
+
+  function updateLevelUI() {
+    const levelBadge = $('level-badge');
+    const levelTitle = $('level-title');
+    const xpFill = $('xp-bar-fill');
+    const xpText = $('xp-text');
+    const streakBadge = $('streak-badge');
+
+    levelBadge.textContent = '⭐ Lv.' + stats.level;
+    levelTitle.textContent = getLevelTitle(stats.level);
+
+    const currentThreshold = LEVEL_THRESHOLDS[stats.level - 1] || 0;
+    const nextThreshold = LEVEL_THRESHOLDS[stats.level] || stats.xp;
+    const progress = nextThreshold > currentThreshold
+      ? ((stats.xp - currentThreshold) / (nextThreshold - currentThreshold)) * 100
+      : 100;
+    xpFill.style.width = Math.min(progress, 100) + '%';
+    xpText.textContent = stats.xp + ' / ' + nextThreshold + ' XP';
+
+    if (stats.currentStreak > 0) {
+      streakBadge.style.display = 'inline';
+      streakBadge.textContent = '🔥 ' + stats.currentStreak + ' day' + (stats.currentStreak > 1 ? 's' : '');
+    }
+  }
+
+  function showLevelUp(level) {
+    const overlay = $('level-up-overlay');
+    $('level-up-text').textContent = 'LEVEL ' + level + '!';
+    $('level-up-title').textContent = getLevelTitle(level);
+    overlay.classList.add('show');
+    sfxNewRecord();
+    vibrate(50);
+    setTimeout(() => overlay.classList.remove('show'), 2200);
+  }
+
+  // ---- DAILY CHALLENGE (Goal Gradient Effect) ----
+  function updateDailyUI() {
+    const challenge = getDailyChallenge();
+    const dailyEl = $('daily-challenge');
+    $('daily-icon').textContent = challenge.icon;
+    $('daily-name').textContent = 'Daily: ' + challenge.name;
+    $('daily-desc').textContent = challenge.desc;
+
+    let current = 0;
+    if (challenge.stat === 'lines') current = totalLinesCleared;
+    else if (challenge.stat === 'score') current = score;
+    else if (challenge.stat === 'combo') current = maxCombo;
+
+    const completed = current >= challenge.target;
+    $('daily-progress-text').textContent = Math.min(current, challenge.target) + '/' + challenge.target;
+    dailyEl.classList.toggle('completed', completed);
+
+    if (completed && !stats.dailyChallengeComplete && stats.dailyChallengeDate === challenge.date) {
+      // Just completed the daily!
+      stats.dailyChallengeComplete = true;
+      stats.dailyChallengesCompleted++;
+      saveStats();
+    }
+    if (stats.dailyChallengeDate !== challenge.date) {
+      stats.dailyChallengeDate = challenge.date;
+      stats.dailyChallengeComplete = false;
+      saveStats();
+    }
+  }
+
+  // ---- MILESTONES / ACHIEVEMENTS (Variable Ratio Rewards) ----
+  function checkMilestones() {
+    const state = {
+      totalLinesCleared, bestScore, maxCombo: stats.maxCombo,
+      gamesPlayed: stats.lifetimeGames, lifetimeLines: stats.lifetimeLines,
+      longestStreak: stats.longestStreak
+    };
+    const newlyUnlocked = [];
+    for (const m of MILESTONES) {
+      if (stats.unlockedMilestones.includes(m.id)) continue;
+      if (m.check(state)) {
+        stats.unlockedMilestones.push(m.id);
+        newlyUnlocked.push(m);
+      }
+    }
+    saveStats();
+    return newlyUnlocked;
+  }
+
+  function showMilestoneUnlock(milestone) {
+    const el = $('milestone-unlock');
+    $('milestone-icon').textContent = milestone.icon;
+    $('milestone-name').textContent = milestone.name;
+    el.style.display = 'flex';
+    sfxNewRecord();
+    vibrate(40);
+  }
+
+  // ---- MOTIVATIONAL NUDGES (Near-Miss Effect + Social Proof) ----
+  function getMotivationalNudge() {
+    const diff = bestScore - score;
+    // Near-miss: player was close to beating their record
+    if (diff > 0 && diff < bestScore * 0.15 && score > 100) {
+      return '😱 So close! Only ' + diff + ' points from your best. One more try!';
+    }
+    // First game encouragement
+    if (stats.lifetimeGames <= 1) {
+      return '🌟 Great first game! Most players double their score by game 3.';
+    }
+    // Improvement nudge
+    if (score > 0 && stats.lifetimeGames > 1) {
+      const avg = Math.round(stats.lifetimeScore / Math.max(stats.lifetimeGames - 1, 1));
+      if (score > avg) return '📈 Above your average of ' + avg + '! You\'re improving!';
+    }
+    // Streak motivation
+    if (stats.currentStreak >= 2) {
+      return '🔥 ' + stats.currentStreak + '-day streak! Don\'t break it — play again tomorrow!';
+    }
+    // Level progress
+    const nextThreshold = LEVEL_THRESHOLDS[stats.level] || 9999;
+    const remaining = nextThreshold - stats.xp;
+    if (remaining > 0 && remaining < 100) {
+      return '⭐ Only ' + remaining + ' XP to Level ' + (stats.level + 1) + '!';
+    }
+    // Generic social proof
+    const nudges = [
+      '🧩 Average players clear 6+ lines per game. Can you?',
+      '💡 Pro tip: save space in corners for big pieces!',
+      '🎯 Try to beat your record — ' + bestScore + ' points!',
+    ];
+    return nudges[Math.floor(Math.random() * nudges.length)];
+  }
+
+  // ---- STATS MODAL ----
+  function showStatsModal() {
+    const grid = $('stats-grid');
+    const list = $('achievements-list');
+    grid.innerHTML = [
+      { v: stats.lifetimeGames, l: 'Games Played' },
+      { v: stats.bestScore, l: 'Best Score' },
+      { v: stats.lifetimeLines, l: 'Lines Cleared' },
+      { v: stats.maxCombo + 'x', l: 'Best Combo' },
+      { v: stats.lifetimePieces, l: 'Pieces Placed' },
+      { v: stats.longestStreak + 'd', l: 'Best Streak' },
+      { v: stats.level, l: 'Level' },
+      { v: stats.unlockedMilestones.length + '/' + MILESTONES.length, l: 'Achievements' },
+    ].map(s => '<div class="stat-card"><div class="stat-value">' + s.v + '</div><div class="stat-label">' + s.l + '</div></div>').join('');
+
+    list.innerHTML = MILESTONES.map(m => {
+      const unlocked = stats.unlockedMilestones.includes(m.id);
+      return '<div class="achievement-row ' + (unlocked ? '' : 'locked') + '">' +
+        '<div class="ach-icon">' + m.icon + '</div>' +
+        '<div><div class="ach-name">' + m.name + '</div><div class="ach-desc">' + m.desc + '</div></div>' +
+        '</div>';
+    }).join('');
+
+    const modal = $('stats-modal');
+    modal.classList.add('show');
   }
 
   function showScoreFloat(text) {
@@ -484,7 +742,7 @@
 
   // ---- GAME STATE PERSISTENCE ----
   function saveGameState() {
-    localStorage.setItem('bsState', JSON.stringify({ board, pieces, score, combo, totalLinesCleared }));
+    localStorage.setItem('bsState', JSON.stringify({ board, pieces, score, combo, maxCombo, totalLinesCleared }));
   }
 
   function loadGameState() {
@@ -497,6 +755,7 @@
       pieces = state.pieces;
       score = state.score || 0;
       combo = state.combo || 0;
+      maxCombo = state.maxCombo || 0;
       totalLinesCleared = state.totalLinesCleared || 0;
       return true;
     } catch(e) { return false; }
@@ -512,10 +771,43 @@
     localStorage.setItem('bsGamesPlayed', gamesPlayed);
     clearGameState();
 
+    // Update persistent stats
+    stats.lifetimeGames++;
+    stats.lifetimeScore += score;
+    stats.lifetimeLines += totalLinesCleared;
+    stats.bestScore = Math.max(stats.bestScore, score);
+    stats.maxCombo = Math.max(stats.maxCombo, maxCombo);
+
+    // Calculate XP earned this game (Endowed Progress)
+    const xpEarned = Math.floor(score * 0.3) + (totalLinesCleared * 15) + (maxCombo * 20) + 10; // +10 just for playing
+    addXP(xpEarned);
+
+    // Check milestones (Variable Ratio Rewards)
+    const newMilestones = checkMilestones();
+
+    // Show game-over screen
     finalScoreEl.textContent = score;
     finalBestEl.textContent = bestScore;
     newRecordEl.style.display = isNewRecord ? 'block' : 'none';
     if (isNewRecord) sfxNewRecord();
+
+    // Show XP gain
+    const xpGainEl = $('xp-gain');
+    $('xp-gain-text').textContent = '+' + xpEarned + ' XP';
+    xpGainEl.style.display = 'block';
+
+    // Show motivational nudge (Near-Miss / Social Proof)
+    const nudgeEl = $('motivational-nudge');
+    nudgeEl.textContent = getMotivationalNudge();
+    nudgeEl.style.display = 'block';
+
+    // Show milestone unlock if any (delayed for drama)
+    const milestoneEl = $('milestone-unlock');
+    milestoneEl.style.display = 'none';
+    if (newMilestones.length > 0) {
+      setTimeout(() => showMilestoneUnlock(newMilestones[0]), 600);
+    }
+
     gameOverEl.classList.add('show');
 
     // Submit score
@@ -531,12 +823,17 @@
 
   function restart() {
     gameOverEl.classList.remove('show');
-    score = 0; combo = 0; totalLinesCleared = 0;
+    score = 0; combo = 0; maxCombo = 0; totalLinesCleared = 0;
     isNewRecord = false;
     scoreEl.textContent = '0';
     bestScoreEl.textContent = bestScore;
     gameActive = true;
+    // Hide game-over extras
+    $('xp-gain').style.display = 'none';
+    $('motivational-nudge').style.display = 'none';
+    $('milestone-unlock').style.display = 'none';
     initBoard(); renderBoard(); generatePieces();
+    updateDailyUI();
     saveGameState();
   }
 
@@ -580,6 +877,10 @@
       alert(msg);
     }).catch(() => alert('Leaderboard unavailable offline'));
   });
+  $('btn-stats').addEventListener('click', showStatsModal);
+  $('btn-close-stats').addEventListener('click', () => $('stats-modal').classList.remove('show'));
+  $('stats-modal').addEventListener('click', (e) => { if (e.target === $('stats-modal')) $('stats-modal').classList.remove('show'); });
+  $('level-up-overlay').addEventListener('click', () => $('level-up-overlay').classList.remove('show'));
 
   window.addEventListener('resize', () => { initBoard(); renderBoard(); });
 
@@ -587,6 +888,18 @@
   function boot() {
     bestScoreEl.textContent = bestScore;
     initSettings();
+
+    // Initialize progression systems
+    updateStreak();
+    updateLevelUI();
+    updateDailyUI();
+
+    // Sync bestScore from stats
+    if (stats.bestScore > bestScore) {
+      bestScore = stats.bestScore;
+      localStorage.setItem('blockSmashBest', bestScore);
+      bestScoreEl.textContent = bestScore;
+    }
 
     // Try to resume previous game
     if (loadGameState()) {

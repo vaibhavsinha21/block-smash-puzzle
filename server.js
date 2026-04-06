@@ -38,7 +38,13 @@ const scoreLimiter = rateLimit({
 app.use(express.static(path.join(__dirname, 'public'), {
   maxAge: isProd ? '1d' : 0,
   etag: true,
-  lastModified: true
+  lastModified: true,
+  setHeaders: (res, filePath) => {
+    // Service worker must never be cached by browser
+    if (filePath.endsWith('sw.js')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+  }
 }));
 
 // --- Leaderboard API ---
