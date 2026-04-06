@@ -1,0 +1,41 @@
+{
+  "name": "block-smash-puzzle",
+  "version": "1.0.0",
+  "description": "Addictive block puzzle game. Place blocks, clear lines, score big!",
+  "main": "server.js",
+  "scripts": {
+    "start": "NODE_ENV=production node server.js",
+    "dev": "node server.js",
+    "sync": "npx cap sync",
+    "open:android": "npx cap open android",
+    "open:ios": "npx cap open ios",
+    "build:android": "npx cap sync android && cd android && ./gradlew assembleRelease",
+    "build:android:bundle": "npx cap sync android && cd android && ./gradlew bundleRelease",
+    "build:ios": "npx cap sync ios && npx cap open ios",
+    "icons": "npx @capacitor/assets generate --android --ios",
+    "deploy:web": "npx cap sync && echo 'Ready for deployment'"
+  },
+  "dependencies": {
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0"
+  },
+  "devDependencies": {
+    "@capacitor-community/admob": "^8.0.0",
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/app": "^8.1.0",
+    "@capacitor/cli": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.3.0",
+    "@capacitor/preferences": "^8.0.1",
+    "@capacitor/share": "^8.0.1",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.2",
+    "sharp": "^0.34.5"
+  },
+  "author": "BlockSmash Studios",
+  "license": "MIT"
+}

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a4e"/>
+      <stop offset="100%" style="stop-color:#0a0a2e"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" rx="184.32" fill="url(#bg)"/>
+  <!-- Block grid -->
+  <rect x="122.88" y="102.4" width="245.76" height="245.76" rx="30.72" fill="#ff6b6b" filter="url(#glow)"/>
+  <rect x="389.12" y="102.4" width="245.76" height="245.76" rx="30.72" fill="#ffd93d" filter="url(#glow)"/>
+  <rect x="655.36" y="102.4" width="245.76" height="245.76" rx="30.72" fill="#a855f7" filter="url(#glow)"/>
+  <rect x="122.88" y="368.64" width="245.76" height="245.76" rx="30.72" fill="#6bcb77" filter="url(#glow)"/>
+  <rect x="389.12" y="368.64" width="245.76" height="245.76" rx="30.72" fill="#4d96ff" filter="url(#glow)"/>
+  <rect x="655.36" y="368.64" width="245.76" height="245.76" rx="30.72" fill="#f97316" filter="url(#glow)"/>
+  <rect x="122.88" y="634.88" width="512" height="245.76" rx="30.72" fill="#06b6d4" filter="url(#glow)"/>
+  <rect x="655.36" y="634.88" width="245.76" height="245.76" rx="30.72" fill="#ec4899" filter="url(#glow)"/>
+  <!-- Title -->
+  <text x="512" y="972.8" text-anchor="middle" font-size="59.392" fill="white" font-family="system-ui,-apple-system,sans-serif" font-weight="900" letter-spacing="3.072">BLOCK SMASH</text>
+</svg>

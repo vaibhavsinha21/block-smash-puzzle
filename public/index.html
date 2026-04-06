@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a0a2e">
+  <meta name="description" content="Block Smash Puzzle — the addictive block puzzle game! Place blocks, clear lines, score big. Free to play.">
+  <meta name="keywords" content="block puzzle, puzzle game, block smash, brain game, casual game">
+  <meta property="og:title" content="Block Smash Puzzle">
+  <meta property="og:description" content="Place blocks, clear lines, score big! The most addictive puzzle game.">
+  <meta property="og:type" content="website">
+  <title>Block Smash Puzzle</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <style>
+    :root {
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --board-size: min(calc(100vw - 24px), 420px);
+      --cell-gap: 2px;
+      --cell-size: calc((var(--board-size) - 16px - var(--cell-gap) * 7) / 8);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(160deg, #0a0a2e 0%, #151545 40%, #0d0d3d 100%);
+      color: #fff;
+      overflow: hidden;
+      height: 100vh;
+      height: 100dvh;
+      width: 100vw;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* === SPLASH SCREEN === */
+    #splash {
+      position: fixed; inset: 0; z-index: 9999;
+      background: linear-gradient(160deg, #0a0a2e, #151545, #0d0d3d);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      transition: opacity 0.5s;
+    }
+    #splash.hide { opacity: 0; pointer-events: none; }
+    #splash .logo {
+      font-size: 2.2em; font-weight: 900;
+      background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 20px;
+    }
+    #splash .loader {
+      width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #4d96ff; border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* === GAME CONTAINER === */
+    #game-container {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-start;
+      height: 100vh; height: 100dvh;
+      padding: calc(8px + var(--safe-top)) 10px calc(8px + var(--safe-bottom));
+      max-width: 500px; margin: 0 auto;
+    }
+
+    /* === HEADER === */
+    .header {
+      display: flex; justify-content: space-between;
+      align-items: center; width: 100%; padding: 4px 0 8px;
+    }
+    .game-title {
+      font-size: 1.15em; font-weight: 900; letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .score-section { display: flex; gap: 10px; }
+    .score-box {
+      text-align: center; background: rgba(255,255,255,0.06);
+      border-radius: 10px; padding: 5px 12px; min-width: 65px;
+      backdrop-filter: blur(10px);
+    }
+    .score-box .label { font-size: 0.55em; opacity: 0.5; text-transform: uppercase; letter-spacing: 1.5px; }
+    .score-box .value { font-size: 1.25em; font-weight: 800; }
+    .new-best { color: #ffd93d !important; animation: pulse 0.5s ease-in-out; }
+    @keyframes pulse { 50% { transform: scale(1.3); } }
+
+    /* === BOARD === */
+    #board-container { position: relative; margin: 6px 0; }
+    #board {
+      display: grid; grid-template-columns: repeat(8, var(--cell-size));
+      gap: var(--cell-gap); background: rgba(255,255,255,0.04);
+      border-radius: 12px; padding: 8px;
+      border: 1.5px solid rgba(255,255,255,0.06);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .cell {
+      width: var(--cell-size); height: var(--cell-size);
+      border-radius: 4px; background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.03);
+      transition: background 0.12s, transform 0.12s, box-shadow 0.12s;
+    }
+    .cell.filled {
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: inset 0 -2px 4px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.15), 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .cell.preview {
+      background: rgba(255,255,255,0.12) !important;
+      border: 1.5px dashed rgba(255,255,255,0.25) !important;
+      transform: scale(0.95);
+    }
+    .cell.invalid-preview {
+      background: rgba(255,60,60,0.15) !important;
+      border: 1.5px dashed rgba(255,60,60,0.3) !important;
+    }
+    .cell.clearing { animation: clearPop 0.4s ease-out forwards; }
+    @keyframes clearPop {
+      0% { transform: scale(1); opacity: 1; }
+      40% { transform: scale(1.15); opacity: 0.9; }
+      100% { transform: scale(0); opacity: 0; background: transparent; border-color: transparent; box-shadow: none; }
+    }
+    .cell.row-hint, .cell.col-hint {
+      box-shadow: inset 0 0 8px rgba(255,215,0,0.3);
+    }
+
+    /* === PIECES === */
+    #pieces-container {
+      display: flex; justify-content: space-around; align-items: center;
+      width: 100%; padding: 10px 0; gap: 8px; min-height: 90px;
+    }
+    .piece-slot {
+      display: flex; align-items: center; justify-content: center;
+      flex: 1; padding: 8px; background: rgba(255,255,255,0.035);
+      border-radius: 12px; cursor: grab; min-height: 75px;
+      transition: transform 0.2s, background 0.2s, opacity 0.3s;
+      border: 1.5px solid rgba(255,255,255,0.04);
+    }
+    .piece-slot:active { cursor: grabbing; }
+    .piece-slot.dragging { opacity: 0.2; transform: scale(0.9); }
+    .piece-slot.cannot-fit { opacity: 0.35; filter: grayscale(0.5); }
+    .piece-grid { display: grid; gap: 2px; pointer-events: none; }
+    .piece-cell {
+      width: clamp(12px, 3.2vw, 18px); height: clamp(12px, 3.2vw, 18px);
+      border-radius: 3px; pointer-events: none;
+    }
+    .piece-cell.active {
+      box-shadow: inset 0 -2px 3px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.15);
+    }
+    .piece-cell.empty { background: transparent; }
+
+    /* === DRAG GHOST === */
+    #drag-ghost {
+      position: fixed; pointer-events: none; z-index: 1000; display: none; opacity: 0.85;
+    }
+    #drag-ghost .piece-grid { gap: 2px; }
+    #drag-ghost .piece-cell {
+      width: var(--cell-size); height: var(--cell-size); border-radius: 4px;
+    }
+
+    /* === COMBO / SCORE POPUPS === */
+    .combo-popup {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%); font-size: 2.2em; font-weight: 900;
+      pointer-events: none; z-index: 100;
+      animation: comboFloat 1s ease-out forwards;
+      text-shadow: 0 0 20px rgba(255,215,0,0.6);
+    }
+    @keyframes comboFloat {
+      0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+      25% { opacity: 1; transform: translate(-50%, -65%) scale(1.15); }
+      100% { opacity: 0; transform: translate(-50%, -110%) scale(0.9); }
+    }
+    .score-float {
+      position: absolute; font-size: 1.3em; font-weight: 800;
+      color: #ffd93d; pointer-events: none; z-index: 100;
+      animation: scoreUp 0.7s ease-out forwards;
+    }
+    @keyframes scoreUp {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-35px) scale(0.8); }
+    }
+
+    /* === GAME OVER === */
+    #game-over {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.88); z-index: 200;
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; backdrop-filter: blur(12px);
+      padding: var(--safe-top) 20px var(--safe-bottom);
+    }
+    #game-over.show { display: flex; animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    #game-over h2 {
+      font-size: 2.4em; font-weight: 900;
+      background: linear-gradient(90deg, #ff6b6b, #ffd93d);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    #game-over .final-score { font-size: 3em; font-weight: 900; }
+    #game-over .best-label { font-size: 0.9em; opacity: 0.5; }
+    #game-over .best-score { font-size: 1.4em; font-weight: 700; color: #ffd93d; }
+    #game-over .new-record {
+      font-size: 1em; color: #6bcb77; font-weight: 700;
+      animation: pulse 0.6s ease-in-out infinite alternate;
+    }
+    .btn-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .btn {
+      padding: 13px 32px; font-size: 1em; font-weight: 700;
+      border: none; border-radius: 50px; cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s; color: #fff;
+    }
+    .btn:active { transform: scale(0.95); }
+    .btn-primary { background: linear-gradient(135deg, #6bcb77, #4d96ff); box-shadow: 0 4px 15px rgba(75,150,255,0.3); }
+    .btn-share { background: linear-gradient(135deg, #ff6b6b, #ffd93d); box-shadow: 0 4px 15px rgba(255,107,107,0.3); }
+    .btn-secondary { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); }
+
+    /* === AD BANNER === */
+    .ad-banner-slot {
+      width: 100%; max-width: 320px; height: 50px;
+      background: rgba(255,255,255,0.03); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65em; opacity: 0.2; margin-top: auto; margin-bottom: 4px;
+    }
+
+    /* === PARTICLES === */
+    .particle {
+      position: absolute; border-radius: 50%; pointer-events: none; z-index: 50;
+    }
+
+    /* === SETTINGS MODAL === */
+    #settings-modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85); z-index: 300;
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; backdrop-filter: blur(10px);
+    }
+    #settings-modal.show { display: flex; }
+    .settings-panel {
+      background: rgba(255,255,255,0.08); border-radius: 16px;
+      padding: 24px; width: 85%; max-width: 320px;
+    }
+    .settings-panel h3 { margin-bottom: 16px; font-size: 1.3em; }
+    .setting-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .setting-row:last-child { border-bottom: none; }
+    .toggle {
+      width: 44px; height: 24px; background: rgba(255,255,255,0.15);
+      border-radius: 12px; cursor: pointer; position: relative;
+      transition: background 0.2s;
+    }
+    .toggle.on { background: #4d96ff; }
+    .toggle::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 20px; height: 20px; background: #fff;
+      border-radius: 50%; transition: transform 0.2s;
+    }
+    .toggle.on::after { transform: translateX(20px); }
+
+    /* Gear icon */
+    .gear-btn {
+      background: none; border: none; cursor: pointer; padding: 4px;
+      opacity: 0.5; transition: opacity 0.2s; font-size: 1.2em;
+    }
+    .gear-btn:hover { opacity: 1; }
+  </style>
+</head>
+<body>
+  <!-- Splash Screen -->
+  <div id="splash">
+    <div class="logo">BLOCK SMASH</div>
+    <div class="loader"></div>
+  </div>
+
+  <div id="game-container">
+    <div class="header">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="game-title">BLOCK SMASH</div>
+        <button class="gear-btn" id="btn-settings" aria-label="Settings">⚙️</button>
+      </div>
+      <div class="score-section">
+        <div class="score-box">
+          <div class="label">Score</div>
+          <div class="value" id="score">0</div>
+        </div>
+        <div class="score-box">
+          <div class="label">Best</div>
+          <div class="value" id="best-score">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="board-container">
+      <div id="board"></div>
+    </div>
+
+    <div id="pieces-container"></div>
+
+    <div class="ad-banner-slot" id="ad-banner">
+      <!-- AdMob banner loads here via Capacitor plugin -->
+      <span>Ad</span>
+    </div>
+  </div>
+
+  <div id="drag-ghost"></div>
+
+  <!-- Game Over Overlay -->
+  <div id="game-over">
+    <h2>GAME OVER</h2>
+    <div class="final-score" id="final-score">0</div>
+    <div class="new-record" id="new-record" style="display:none">🏆 NEW RECORD!</div>
+    <div class="best-label">Best Score</div>
+    <div class="best-score" id="final-best">0</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-restart">▶ Play Again</button>
+      <button class="btn btn-share" id="btn-share">Share 🔗</button>
+    </div>
+    <button class="btn btn-secondary" id="btn-leaderboard" style="margin-top:4px;">🏅 Leaderboard</button>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal">
+    <div class="settings-panel">
+      <h3>⚙️ Settings</h3>
+      <div class="setting-row">
+        <span>Sound</span>
+        <div class="toggle on" id="toggle-sound"></div>
+      </div>
+      <div class="setting-row">
+        <span>Vibration</span>
+        <div class="toggle on" id="toggle-vibration"></div>
+      </div>
+      <div class="setting-row">
+        <span>Music</span>
+        <div class="toggle" id="toggle-music"></div>
+      </div>
+      <div style="margin-top:16px;text-align:center;">
+        <button class="btn btn-primary" id="btn-close-settings" style="padding:10px 28px;">Done</button>
+      </div>
+      <div style="margin-top:16px;text-align:center;opacity:0.3;font-size:0.7em;">
+        <a href="/privacy" style="color:#fff;">Privacy Policy</a> · v1.0.0
+      </div>
+    </div>
+  </div>
+
+  <script src="/game.js"></script>
+</body>
+</html>
