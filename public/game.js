@@ -1,5 +1,5 @@
 // ============================================================
-// BLOCK SMASH PUZZLE — Production Game Engine v1.0.0
+// BLOCK SMASH PUZZLE — Production Game Engine v2.0.0
 // © 2026 BlockSmash Studios. All rights reserved.
 // ============================================================
 (() => {
@@ -8,6 +8,7 @@
   // ---- CONFIG ----
   const BOARD_SIZE = 8;
   const COLORS = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#a855f7','#f97316','#06b6d4','#ec4899'];
+  const UNDO_COST = 0; // free undo (set to score penalty if desired)
 
   // ---- LEVEL / PROGRESSION CONFIG ----
   // XP thresholds for each level (level 1 = 0 XP, level 2 = 200 XP, etc.)
@@ -96,6 +97,9 @@
   let draggingIdx = -1;
   let gameActive = true;
   let isNewRecord = false;
+  let undoState = null; // snapshot before last move
+  let undoAvailable = false;
+  let hasShownTutorial = localStorage.getItem('bsTutorialShown') === '1';
 
   // ---- PERSISTENT STATS (Endowed Progress + Loss Aversion) ----
   let stats = JSON.parse(localStorage.getItem('bsStats') || 'null') || {
@@ -184,6 +188,164 @@
     try { navigator.vibrate && navigator.vibrate(ms); } catch(e) {}
   }
 
+  // ---- BACKGROUND MUSIC (Lo-fi ambient loop) ----
+  let musicOsc1 = null, musicOsc2 = null, musicGain = null, musicPlaying = false;
+  function startMusic() {
+    if (musicPlaying || !settings.musicOn) return;
+    try {
+      const ctx = getAudioCtx();
+      musicGain = ctx.createGain();
+      musicGain.gain.setValueAtTime(0.03, ctx.currentTime);
+      musicGain.connect(ctx.destination);
+
+      // Pad 1 — warm chord
+      musicOsc1 = ctx.createOscillator();
+      musicOsc1.type = 'sine';
+      musicOsc1.frequency.setValueAtTime(220, ctx.currentTime);
+      musicOsc1.connect(musicGain);
+      musicOsc1.start();
+
+      // Pad 2 — harmony
+      musicOsc2 = ctx.createOscillator();
+      musicOsc2.type = 'sine';
+      musicOsc2.frequency.setValueAtTime(330, ctx.currentTime);
+      const g2 = ctx.createGain();
+      g2.gain.setValueAtTime(0.02, ctx.currentTime);
+      musicOsc2.connect(g2);
+      g2.connect(ctx.destination);
+      musicOsc2.start();
+
+      // Slowly modulate for movement
+      const lfo = ctx.createOscillator();
+      lfo.frequency.setValueAtTime(0.1, ctx.currentTime);
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.setValueAtTime(8, ctx.currentTime);
+      lfo.connect(lfoGain);
+      lfoGain.connect(musicOsc1.frequency);
+      lfo.start();
+
+      musicPlaying = true;
+    } catch(e) {}
+  }
+
+  function stopMusic() {
+    try {
+      if (musicOsc1) { musicOsc1.stop(); musicOsc1 = null; }
+      if (musicOsc2) { musicOsc2.stop(); musicOsc2 = null; }
+    } catch(e) {}
+    musicPlaying = false;
+  }
+
+  function toggleMusic(on) {
+    settings.musicOn = on;
+    saveSetting();
+    if (on) startMusic();
+    else stopMusic();
+  }
+
+  // ---- UNDO SYSTEM ----
+  function saveUndoSnapshot() {
+    undoState = {
+      board: board.map(row => [...row]),
+      pieces: pieces.map(p => p ? { ...p, shape: p.shape.map(r => [...r]) } : null),
+      score,
+      combo,
+      maxCombo,
+      totalLinesCleared,
+    };
+    undoAvailable = true;
+    updateUndoButton();
+  }
+
+  function performUndo() {
+    if (!undoState || !undoAvailable || !gameActive) return;
+    board = undoState.board;
+    pieces = undoState.pieces;
+    score = undoState.score;
+    combo = undoState.combo;
+    maxCombo = undoState.maxCombo;
+    totalLinesCleared = undoState.totalLinesCleared;
+    scoreEl.textContent = score;
+    undoAvailable = false;
+    undoState = null;
+    renderBoard();
+    renderPieces();
+    saveGameState();
+    updateUndoButton();
+    sfxPlace();
+    vibrate(10);
+  }
+
+  function updateUndoButton() {
+    const btn = $('btn-undo');
+    if (btn) {
+      btn.style.opacity = undoAvailable ? '1' : '0.3';
+      btn.style.pointerEvents = undoAvailable ? 'auto' : 'none';
+    }
+  }
+
+  // ---- TUTORIAL ----
+  function showTutorial() {
+    if (hasShownTutorial) return;
+    const overlay = $('tutorial-overlay');
+    if (overlay) {
+      overlay.classList.add('show');
+      hasShownTutorial = true;
+      localStorage.setItem('bsTutorialShown', '1');
+    }
+  }
+
+  function dismissTutorial() {
+    const overlay = $('tutorial-overlay');
+    if (overlay) overlay.classList.remove('show');
+  }
+
+  // ---- LOW SPACE WARNING ----
+  function getBoardFillPercent() {
+    let filled = 0;
+    for (let r = 0; r < BOARD_SIZE; r++)
+      for (let c = 0; c < BOARD_SIZE; c++)
+        if (board[r][c]) filled++;
+    return filled / (BOARD_SIZE * BOARD_SIZE);
+  }
+
+  function updateDangerIndicator() {
+    const pct = getBoardFillPercent();
+    const boardBorder = boardEl;
+    const fillIndicator = $('fill-percent');
+    if (fillIndicator) {
+      const percent = Math.round(pct * 100);
+      fillIndicator.textContent = percent + '%';
+      fillIndicator.style.color = pct > 0.7 ? '#ff6b6b' : pct > 0.5 ? '#ffd93d' : 'rgba(255,255,255,0.3)';
+    }
+    if (pct > 0.75) {
+      boardBorder.style.borderColor = 'rgba(255,107,107,0.4)';
+      boardBorder.style.boxShadow = '0 8px 32px rgba(255,60,60,0.15), inset 0 1px 0 rgba(255,255,255,0.05)';
+    } else {
+      boardBorder.style.borderColor = 'rgba(255,255,255,0.06)';
+      boardBorder.style.boxShadow = '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)';
+    }
+  }
+
+  // ---- CONFETTI (for new records) ----
+  function spawnConfetti() {
+    const container = document.body;
+    const emojis = ['🎉','🎊','⭐','🏆','✨','💎'];
+    for (let i = 0; i < 30; i++) {
+      const el = document.createElement('div');
+      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      el.style.cssText = 'position:fixed;font-size:' + (16 + Math.random() * 16) + 'px;pointer-events:none;z-index:999;' +
+        'left:' + (Math.random() * 100) + 'vw;top:-20px;';
+      container.appendChild(el);
+      const duration = 1500 + Math.random() * 1500;
+      el.animate([
+        { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
+        { transform: 'translateY(' + (window.innerHeight + 40) + 'px) rotate(' + (360 + Math.random() * 360) + 'deg)', opacity: 0 }
+      ], { duration, easing: 'ease-in', delay: Math.random() * 400 });
+      setTimeout(() => el.remove(), duration + 400);
+    }
+  }
+
   // ---- ADMOB INTEGRATION (Capacitor) ----
   const AdMob = {
     isNative: typeof window.Capacitor !== 'undefined',
@@ -262,6 +424,7 @@
       }
     }
     highlightAlmostComplete();
+    updateDangerIndicator();
   }
 
   // ---- HIGHLIGHT ALMOST-COMPLETE ROWS/COLS ----
@@ -413,6 +576,8 @@
     }
 
     if (lastPreviewR >= 0 && lastPreviewC >= 0 && dragPiece) {
+      // Save undo snapshot before this move
+      saveUndoSnapshot();
       placePiece(dragPiece, lastPreviewR, lastPreviewC);
       const cellCount = countCells(dragPiece);
       pieces[draggingIdx] = null;
@@ -513,9 +678,12 @@
   }
 
   // ---- SCORING ----
+  let displayScore = 0;
+  let scoreAnimFrame = null;
   function addScore(pts) {
     score += pts;
-    scoreEl.textContent = score;
+    // Smooth animated counter
+    animateScoreCounter();
     if (score > bestScore) {
       bestScore = score;
       bestScoreEl.textContent = bestScore;
@@ -527,6 +695,29 @@
     showScoreFloat('+' + pts);
     // Update daily challenge progress in real-time
     updateDailyUI();
+  }
+
+  function animateScoreCounter() {
+    if (scoreAnimFrame) cancelAnimationFrame(scoreAnimFrame);
+    const start = displayScore;
+    const end = score;
+    const duration = 300;
+    const startTime = performance.now();
+    function tick(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease-out
+      const eased = 1 - Math.pow(1 - progress, 3);
+      displayScore = Math.round(start + (end - start) * eased);
+      scoreEl.textContent = displayScore;
+      if (progress < 1) {
+        scoreAnimFrame = requestAnimationFrame(tick);
+      } else {
+        displayScore = end;
+        scoreEl.textContent = end;
+      }
+    }
+    scoreAnimFrame = requestAnimationFrame(tick);
   }
 
   // ---- XP & LEVELING (Endowed Progress Effect) ----
@@ -789,7 +980,7 @@
     finalScoreEl.textContent = score;
     finalBestEl.textContent = bestScore;
     newRecordEl.style.display = isNewRecord ? 'block' : 'none';
-    if (isNewRecord) sfxNewRecord();
+    if (isNewRecord) { sfxNewRecord(); spawnConfetti(); }
 
     // Show XP gain
     const xpGainEl = $('xp-gain');
@@ -825,6 +1016,8 @@
     gameOverEl.classList.remove('show');
     score = 0; combo = 0; maxCombo = 0; totalLinesCleared = 0;
     isNewRecord = false;
+    undoState = null; undoAvailable = false;
+    displayScore = 0;
     scoreEl.textContent = '0';
     bestScoreEl.textContent = bestScore;
     gameActive = true;
@@ -860,7 +1053,7 @@
 
     soundT.addEventListener('click', () => { settings.soundOn = !settings.soundOn; soundT.classList.toggle('on'); saveSetting(); });
     vibT.addEventListener('click', () => { settings.vibrationOn = !settings.vibrationOn; vibT.classList.toggle('on'); saveSetting(); });
-    musicT.addEventListener('click', () => { settings.musicOn = !settings.musicOn; musicT.classList.toggle('on'); saveSetting(); });
+    musicT.addEventListener('click', () => { toggleMusic(!settings.musicOn); musicT.classList.toggle('on'); });
 
     $('btn-settings').addEventListener('click', () => settingsModal.classList.add('show'));
     $('btn-close-settings').addEventListener('click', () => settingsModal.classList.remove('show'));
@@ -872,15 +1065,37 @@
   $('btn-share').addEventListener('click', shareScore);
   $('btn-leaderboard').addEventListener('click', () => {
     fetch('/api/scores').then(r => r.json()).then(scores => {
-      let msg = '\u{1F3C5} Top Scores:\n';
-      scores.slice(0, 10).forEach((s, i) => { msg += (i + 1) + '. ' + s.name + ' — ' + s.score + '\n'; });
-      alert(msg);
-    }).catch(() => alert('Leaderboard unavailable offline'));
+      const modal = $('leaderboard-modal');
+      const list = $('leaderboard-list');
+      if (!scores.length) {
+        list.innerHTML = '<div style="text-align:center;opacity:0.4;padding:20px;">No scores yet. Be the first!</div>';
+      } else {
+        list.innerHTML = scores.slice(0, 10).map((s, i) => {
+          const medals = ['🥇','🥈','🥉'];
+          const prefix = i < 3 ? medals[i] : '<span style="opacity:0.4;font-size:0.8em;">' + (i+1) + '.</span>';
+          return '<div class="lb-row">' + prefix + ' <span class="lb-name">' + s.name + '</span><span class="lb-score">' + s.score.toLocaleString() + '</span></div>';
+        }).join('');
+      }
+      modal.classList.add('show');
+    }).catch(() => {
+      const modal = $('leaderboard-modal');
+      $('leaderboard-list').innerHTML = '<div style="text-align:center;opacity:0.4;padding:20px;">Leaderboard unavailable offline</div>';
+      modal.classList.add('show');
+    });
   });
+  $('btn-close-leaderboard').addEventListener('click', () => $('leaderboard-modal').classList.remove('show'));
+  $('leaderboard-modal').addEventListener('click', (e) => { if (e.target === $('leaderboard-modal')) $('leaderboard-modal').classList.remove('show'); });
   $('btn-stats').addEventListener('click', showStatsModal);
   $('btn-close-stats').addEventListener('click', () => $('stats-modal').classList.remove('show'));
   $('stats-modal').addEventListener('click', (e) => { if (e.target === $('stats-modal')) $('stats-modal').classList.remove('show'); });
   $('level-up-overlay').addEventListener('click', () => $('level-up-overlay').classList.remove('show'));
+  $('btn-undo').addEventListener('click', performUndo);
+  if ($('btn-tutorial-close')) $('btn-tutorial-close').addEventListener('click', dismissTutorial);
+  if ($('tutorial-overlay')) $('tutorial-overlay').addEventListener('click', (e) => { if (e.target === $('tutorial-overlay')) dismissTutorial(); });
+  if ($('btn-how-to-play')) $('btn-how-to-play').addEventListener('click', () => {
+    const overlay = $('tutorial-overlay');
+    if (overlay) overlay.classList.add('show');
+  });
 
   window.addEventListener('resize', () => { initBoard(); renderBoard(); });
 
@@ -914,10 +1129,23 @@
     setTimeout(() => {
       splashEl.classList.add('hide');
       setTimeout(() => splashEl.remove(), 500);
+      // Show tutorial on first visit
+      if (!hasShownTutorial) setTimeout(showTutorial, 300);
     }, 800);
 
     // Init AdMob
     AdMob.init();
+
+    // Start music if enabled
+    if (settings.musicOn) {
+      document.addEventListener('click', function musicStarter() {
+        startMusic();
+        document.removeEventListener('click', musicStarter);
+      }, { once: true });
+    }
+
+    // Update undo button state
+    updateUndoButton();
 
     // Register Service Worker
     if ('serviceWorker' in navigator) {

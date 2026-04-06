@@ -1,5 +1,5 @@
-// Block Smash Puzzle — Service Worker v2.0.0
-const CACHE_NAME = 'block-smash-v2.0.0';
+// Block Smash Puzzle — Service Worker v2.1.0
+const CACHE_NAME = 'block-smash-v2.1.0';
 const ASSETS = [
   '/',
   '/index.html',

@@ -392,6 +392,28 @@
     .achievement-row .ach-icon { font-size: 1.4em; }
     .achievement-row .ach-name { font-size: 0.8em; font-weight: 700; }
     .achievement-row .ach-desc { font-size: 0.6em; opacity: 0.5; }
+
+    /* === UNDO & ACTION BUTTONS === */
+    .action-btn {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      color: #fff; font-size: 0.65em; font-weight: 700; padding: 4px 10px;
+      border-radius: 8px; cursor: pointer; transition: all 0.2s;
+    }
+    .action-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.12); }
+
+    /* === LEADERBOARD MODAL === */
+    #leaderboard-modal.show { display: flex; }
+    .lb-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.9em;
+    }
+    .lb-row:last-child { border-bottom: none; }
+    .lb-name { flex: 1; font-weight: 600; }
+    .lb-score { font-weight: 800; color: #ffd93d; font-variant-numeric: tabular-nums; }
+
+    /* === TUTORIAL OVERLAY === */
+    #tutorial-overlay.show { display: flex; animation: fadeIn 0.4s ease-out; }
   </style>
 </head>
 <body>
@@ -447,14 +469,18 @@
     </div>
 
     <div id="board-container">
+      <div style="display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:4px;">
+        <button class="action-btn" id="btn-undo" style="opacity:0.3;pointer-events:none;" aria-label="Undo">↩ Undo</button>
+        <span id="fill-percent" style="font-size:0.65em;opacity:0.3;font-weight:700;">0%</span>
+        <button class="action-btn" id="btn-how-to-play" aria-label="How to play">❓ How</button>
+      </div>
       <div id="board"></div>
     </div>
 
     <div id="pieces-container"></div>
 
-    <div class="ad-banner-slot" id="ad-banner">
-      <!-- AdMob banner loads here via Capacitor plugin -->
-      <span>Ad</span>
+    <div class="ad-banner-slot" id="ad-banner" style="display:none;">
+      <!-- AdMob banner loads here via Capacitor plugin on native -->
     </div>
   </div>
 
@@ -515,7 +541,7 @@
         <button class="btn btn-primary" id="btn-close-settings" style="padding:10px 28px;">Done</button>
       </div>
       <div style="margin-top:16px;text-align:center;opacity:0.3;font-size:0.7em;">
-        <a href="/privacy" style="color:#fff;">Privacy Policy</a> · v1.0.0
+        <a href="/privacy" style="color:#fff;">Privacy Policy</a> · v2.0.0
       </div>
     </div>
   </div>
@@ -539,6 +565,38 @@
       <div class="level-up-icon">🎉</div>
       <div class="level-up-text" id="level-up-text">LEVEL 2!</div>
       <div class="level-up-title" id="level-up-title">Beginner</div>
+    </div>
+  </div>
+
+  <!-- Leaderboard Modal -->
+  <div id="leaderboard-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(10px);">
+    <div class="settings-panel" style="max-width:360px;max-height:80vh;overflow-y:auto;">
+      <h3>🏅 Leaderboard</h3>
+      <div id="leaderboard-list" style="margin:12px 0;"></div>
+      <div style="text-align:center;">
+        <button class="btn btn-primary" id="btn-close-leaderboard" style="padding:10px 28px;">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tutorial Overlay -->
+  <div id="tutorial-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:350;align-items:center;justify-content:center;backdrop-filter:blur(12px);">
+    <div class="settings-panel" style="max-width:340px;text-align:center;">
+      <h3 style="margin-bottom:12px;">🧩 How to Play</h3>
+      <div style="text-align:left;font-size:0.85em;line-height:1.8;opacity:0.85;">
+        <div style="margin-bottom:8px;">👆 <strong>Drag & drop</strong> blocks onto the 8×8 board</div>
+        <div style="margin-bottom:8px;">📏 <strong>Fill complete rows or columns</strong> to clear them and score points</div>
+        <div style="margin-bottom:8px;">🔥 <strong>Chain clears</strong> for combos — the more in a row, the higher the multiplier!</div>
+        <div style="margin-bottom:8px;">↩ <strong>Undo</strong> your last move if you make a mistake</div>
+        <div style="margin-bottom:8px;">🎯 <strong>Complete daily challenges</strong> for bonus XP</div>
+        <div style="margin-bottom:8px;">💀 <strong>Game ends</strong> when no pieces can fit on the board</div>
+      </div>
+      <div style="margin-top:4px;padding:10px;background:rgba(255,215,0,0.1);border-radius:10px;font-size:0.75em;opacity:0.7;">
+        💡 <strong>Pro tip:</strong> Keep the center clear and build from edges!
+      </div>
+      <div style="margin-top:16px;">
+        <button class="btn btn-primary" id="btn-tutorial-close" style="padding:12px 36px;font-size:1.05em;">Got it! Let's Play 🎮</button>
+      </div>
     </div>
   </div>
 
