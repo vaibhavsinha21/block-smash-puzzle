@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#0a0a1a">
+  <meta name="theme-color" content="#0c0e1f">
   <meta name="description" content="Block Smash Puzzle — the addictive block puzzle game! Place blocks, clear lines, score big. Free to play.">
   <meta name="keywords" content="block puzzle, puzzle game, block smash, brain game, casual game">
   <meta property="og:title" content="Block Smash Puzzle">
@@ -26,7 +26,7 @@
       --cell-size: calc((var(--board-size) - 16px - var(--cell-gap) * 7) / 8);
       --piece-cell: clamp(16px, 4.5vw, 26px);
       --ui-radius: 14px;
-      --bg-primary: #0a0a1a;
+      --bg-primary: #0c0e1f;
       --bg-card: rgba(255,255,255,0.04);
       --border-subtle: rgba(255,255,255,0.06);
       --text-dim: rgba(255,255,255,0.35);
@@ -37,13 +37,13 @@
       --accent-red: #ff6b6b;
     }
     /* === THEME OVERRIDES (set via JS) === */
-    body.theme-ocean { --bg-primary:#0a1628; --accent-blue:#00bcd4; --accent-purple:#26c6da; --accent-green:#00e5ff; --accent-red:#ff5252; --accent-gold:#ffab40; }
-    body.theme-sunset { --bg-primary:#1a0a0a; --accent-blue:#ff7043; --accent-purple:#ff5722; --accent-green:#ffab40; --accent-red:#e91e63; --accent-gold:#ffc107; }
-    body.theme-forest { --bg-primary:#0a1a0a; --accent-blue:#66bb6a; --accent-purple:#4caf50; --accent-green:#81c784; --accent-red:#ef5350; --accent-gold:#ffd54f; }
-    body.theme-neon { --bg-primary:#0a0020; --accent-blue:#00e5ff; --accent-purple:#e040fb; --accent-green:#76ff03; --accent-red:#ff1744; --accent-gold:#ffea00; }
-    body.theme-candy { --bg-primary:#1a0a1a; --accent-blue:#f48fb1; --accent-purple:#ce93d8; --accent-green:#80cbc4; --accent-red:#ef5350; --accent-gold:#fff176; }
-    body.theme-arctic { --bg-primary:#0a1420; --accent-blue:#81d4fa; --accent-purple:#b39ddb; --accent-green:#80cbc4; --accent-red:#ef9a9a; --accent-gold:#fff59d; }
-    body.theme-volcanic { --bg-primary:#1a0800; --accent-blue:#ff6e40; --accent-purple:#ff3d00; --accent-green:#ffa726; --accent-red:#d50000; --accent-gold:#ffd600; }
+    body.theme-ocean { --bg-primary:#0b1526; --accent-blue:#00bcd4; --accent-purple:#26c6da; --accent-green:#00e5ff; --accent-red:#ff5252; --accent-gold:#ffab40; }
+    body.theme-sunset { --bg-primary:#1c0c0c; --accent-blue:#ff7043; --accent-purple:#ff5722; --accent-green:#ffab40; --accent-red:#e91e63; --accent-gold:#ffc107; }
+    body.theme-forest { --bg-primary:#0c1a0e; --accent-blue:#66bb6a; --accent-purple:#4caf50; --accent-green:#81c784; --accent-red:#ef5350; --accent-gold:#ffd54f; }
+    body.theme-neon { --bg-primary:#0a0024; --accent-blue:#00e5ff; --accent-purple:#e040fb; --accent-green:#76ff03; --accent-red:#ff1744; --accent-gold:#ffea00; }
+    body.theme-candy { --bg-primary:#1c0c1c; --accent-blue:#f48fb1; --accent-purple:#ce93d8; --accent-green:#80cbc4; --accent-red:#ef5350; --accent-gold:#fff176; }
+    body.theme-arctic { --bg-primary:#0c1422; --accent-blue:#81d4fa; --accent-purple:#b39ddb; --accent-green:#80cbc4; --accent-red:#ef9a9a; --accent-gold:#fff59d; }
+    body.theme-volcanic { --bg-primary:#1c0a02; --accent-blue:#ff6e40; --accent-purple:#ff3d00; --accent-green:#ffa726; --accent-red:#d50000; --accent-gold:#ffd600; }
     /* Seasonal theme overrides */
     body.theme-halloween { --bg-primary:#0d0a00; --accent-blue:#ff6f00; --accent-purple:#9c27b0; --accent-green:#76ff03; --accent-red:#d50000; --accent-gold:#ff9100; }
     body.theme-christmas { --bg-primary:#0a1008; --accent-blue:#1565c0; --accent-purple:#c62828; --accent-green:#2e7d32; --accent-red:#c62828; --accent-gold:#ffd600; }
@@ -99,26 +99,27 @@
     /* === TABLET LANDSCAPE (7-11") === */
     @media (min-width: 900px) and (max-height: 800px) and (orientation: landscape) {
       :root {
-        --board-size: min(calc(100dvh - 120px), calc(100vw * 0.42), 480px);
+        --board-size: min(calc(100dvh - 100px), calc(100vw * 0.42), 480px);
         --piece-cell: clamp(18px, 3vw, 28px);
         --cell-gap: 3px;
       }
       body { font-size: 16px; }
       #game-container {
-        flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: flex-start;
-        max-width: 100%; padding: 8px 20px; gap: 10px;
+        flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center;
+        max-width: 100%; padding: 6px 24px; gap: 14px;
       }
-      .header { width: 100%; }
-      #board-container { order: 1; }
+      .header { width: 100%; padding: 0 0 2px; }
+      #board-container { order: 1; flex-shrink: 0; }
       #pieces-container {
         order: 2; flex-direction: column;
-        max-height: calc(100dvh - 80px); min-height: unset;
-        max-width: 220px; gap: 6px;
+        max-height: calc(100dvh - 60px); min-height: unset;
+        max-width: 200px; gap: 8px; justify-content: center;
       }
-      .piece-slot { min-height: 60px; }
+      .piece-slot { min-height: 55px; max-width: 180px; padding: 10px 6px; }
       #level-bar-container { display: none; }
       .daily-challenge { display: none; }
       #powerup-bar { width: auto; order: 3; flex-direction: column; gap: 4px; }
+      .score-box { padding: 4px 12px; min-width: 60px; }
     }
     /* === LARGE TABLET / CHROMEBOOK (12"+) === */
     @media (min-width: 1200px) and (min-height: 800px) {
@@ -132,9 +133,33 @@
       .modal-panel { max-width: 520px; padding: 36px; }
       .piece-slot { min-height: 110px; max-width: 200px; }
     }
+    /* === LARGE TABLET / CHROMEBOOK LANDSCAPE === */
+    @media (min-width: 1200px) and (max-height: 900px) and (orientation: landscape) {
+      :root {
+        --board-size: min(calc(100dvh - 80px), 520px);
+        --piece-cell: clamp(20px, 2.5vw, 30px);
+        --cell-gap: 3px;
+      }
+      #game-container {
+        flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center;
+        max-width: 100%; padding: 6px 32px; gap: 20px;
+      }
+      .header { width: 100%; }
+      #board-container { order: 1; }
+      #pieces-container {
+        order: 2; flex-direction: column;
+        max-height: calc(100dvh - 60px); min-height: unset;
+        max-width: 240px; gap: 10px; justify-content: center;
+      }
+      .piece-slot { min-height: 70px; max-width: 220px; }
+      #level-bar-container { display: none; }
+      .daily-challenge { display: none; }
+      #powerup-bar { width: auto; order: 3; flex-direction: column; gap: 6px; }
+    }
+    /* === PHONE LANDSCAPE === */
     @media (max-height: 500px) and (orientation: landscape) {
       :root {
-        --board-size: min(calc(100dvh - 100px), calc(100vw * 0.45));
+        --board-size: min(calc(100dvh - 80px), calc(100vw * 0.42));
         --piece-cell: clamp(12px, 3vw, 20px);
       }
     }
@@ -152,11 +177,12 @@
       -webkit-tap-highlight-color: transparent;
       -webkit-font-smoothing: antialiased;
       -webkit-overflow-scrolling: touch;
+      transition: background-color 0.3s ease;
     }
     /* Android performance: reduce backdrop-filter on lower-end devices */
     @supports not (backdrop-filter: blur(8px)) {
       .score-box, .modal-overlay, .game-over-overlay, .modal-panel {
-        background-color: rgba(10,10,26,0.92) !important;
+        background-color: rgba(12,14,31,0.92) !important;
       }
     }
     /* Minimum touch target for Android (48dp) */
@@ -176,7 +202,7 @@
     }
     #bg-canvas {
       position: fixed; inset: 0; z-index: 0;
-      pointer-events: none; opacity: 0.5;
+      pointer-events: none; opacity: 0.65;
     }
     #fx-canvas {
       position: fixed; inset: 0; z-index: 50;
@@ -186,7 +212,7 @@
     /* === SPLASH === */
     #splash {
       position: fixed; inset: 0; z-index: 9999;
-      background: radial-gradient(ellipse at 50% 30%, #1a1a4e 0%, #0a0a1a 70%);
+      background: radial-gradient(ellipse at 50% 30%, #161850 0%, #0c0e1f 70%);
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
@@ -575,7 +601,7 @@
     /* === GAME OVER === */
     #game-over {
       display: none; position: fixed; inset: 0;
-      background: rgba(5,5,15,0.94); z-index: 200;
+      background: rgba(8,10,22,0.95); z-index: 200;
       flex-direction: column; align-items: center; justify-content: center;
       gap: 14px; backdrop-filter: blur(20px);
       padding: var(--safe-top) 24px var(--safe-bottom);
@@ -617,6 +643,16 @@
     .btn-exit {
       background: rgba(255,60,60,0.1); border: 1px solid rgba(255,60,60,0.15);
       color: var(--accent-red); font-size: 0.9em; padding: 10px 28px;
+    }
+    .btn-rewarded {
+      background: linear-gradient(135deg, rgba(168,85,247,0.25), rgba(77,150,255,0.25));
+      border: 1px solid rgba(168,85,247,0.3);
+      color: #c084fc; font-size: 0.95em; padding: 12px 32px;
+      animation: rewardedPulse 2s ease-in-out infinite;
+    }
+    @keyframes rewardedPulse {
+      0%, 100% { box-shadow: 0 0 8px rgba(168,85,247,0.1); }
+      50% { box-shadow: 0 0 20px rgba(168,85,247,0.3); }
     }
     .btn-exit:active { background: rgba(255,60,60,0.2); }
 
@@ -949,6 +985,9 @@
     <div class="btn-row">
       <button class="btn btn-primary" id="btn-restart">▶ Play Again</button>
       <button class="btn btn-share" id="btn-share">Share 🔗</button>
+    </div>
+    <div class="btn-row" style="margin-top:4px;">
+      <button class="btn btn-rewarded" id="btn-second-chance" style="display:none">🎬 Second Chance</button>
     </div>
     <div class="btn-row" style="margin-top:4px;">
       <button class="btn btn-secondary" id="btn-leaderboard">🏅 Leaderboard</button>

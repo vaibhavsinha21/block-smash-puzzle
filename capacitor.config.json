@@ -11,7 +11,7 @@
     "SplashScreen": {
       "launchShowDuration": 1500,
       "launchAutoHide": true,
-      "backgroundColor": "#0a0a1a",
+      "backgroundColor": "#0c0e1f",
       "showSpinner": false,
       "androidSplashResourceName": "splash",
       "iosSplashResourceName": "splash",
@@ -19,7 +19,7 @@
     },
     "StatusBar": {
       "style": "DARK",
-      "backgroundColor": "#0a0a1a",
+      "backgroundColor": "#0c0e1f",
       "overlaysWebView": false
     },
     "AdMob": {
@@ -32,7 +32,7 @@
     "allowMixedContent": false,
     "captureInput": true,
     "webContentsDebuggingEnabled": false,
-    "backgroundColor": "#0a0a1a"
+    "backgroundColor": "#0c0e1f"
   },
   "ios": {
     "contentInset": "always",

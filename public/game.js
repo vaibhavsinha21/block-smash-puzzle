@@ -1293,34 +1293,57 @@
     // Render BG at reduced resolution to save GPU tile memory on Android
     // Tablets get lower scale since the orbs are just blurry ambient effects
     const w = window.innerWidth;
-    const scale = w > 1200 ? 0.25 : w > 768 ? 0.4 : 0.6;
+    const scale = w > 1200 ? 0.2 : w > 768 ? 0.3 : 0.35;
     bgW = bgCanvas.width = Math.round(w * scale);
     bgH = bgCanvas.height = Math.round(window.innerHeight * scale);
     bgCanvas.style.width = '100%';
     bgCanvas.style.height = '100%';
     bgOrbs.length = 0;
-    const orbCount = Math.min(6, Math.floor(bgW * bgH / 120000));
+    // Warm, inviting orbs: deep blues, warm purples, soft teals — premium puzzle game feel
+    const warmHues = [220, 240, 260, 280, 190, 210];
+    const orbCount = Math.min(5, Math.max(3, Math.floor(bgW * bgH / 50000)));
     for (let i = 0; i < orbCount; i++) {
       bgOrbs.push({
         x: Math.random() * bgW, y: Math.random() * bgH,
-        r: 80 + Math.random() * 160,
-        vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
-        hue: Math.random() * 360, alpha: 0.04 + Math.random() * 0.04,
+        r: 60 + Math.random() * 120,
+        vx: (Math.random() - 0.5) * 0.15, vy: (Math.random() - 0.5) * 0.1,
+        hue: warmHues[i % warmHues.length] + (Math.random() - 0.5) * 20,
+        alpha: 0.03 + Math.random() * 0.03,
+        saturation: 50 + Math.random() * 25,
+        lightness: 30 + Math.random() * 20,
       });
     }
   }
 
   function renderBg() {
-    bgCtx.clearRect(0, 0, bgW, bgH);
+    // Deep warm base gradient instead of pure black clear
+    const baseGrad = bgCtx.createLinearGradient(0, 0, bgW * 0.3, bgH);
+    baseGrad.addColorStop(0, '#0d1025');   // deep navy
+    baseGrad.addColorStop(0.5, '#0a0e20'); // midnight blue
+    baseGrad.addColorStop(1, '#0f0a1e');   // warm purple-black
+    bgCtx.fillStyle = baseGrad;
+    bgCtx.fillRect(0, 0, bgW, bgH);
+
+    // Subtle center glow for depth
+    const centerGlow = bgCtx.createRadialGradient(bgW * 0.5, bgH * 0.35, 0, bgW * 0.5, bgH * 0.35, bgW * 0.8);
+    centerGlow.addColorStop(0, 'rgba(30, 40, 80, 0.15)');
+    centerGlow.addColorStop(0.5, 'rgba(20, 25, 60, 0.08)');
+    centerGlow.addColorStop(1, 'transparent');
+    bgCtx.fillStyle = centerGlow;
+    bgCtx.fillRect(0, 0, bgW, bgH);
+
     for (const orb of bgOrbs) {
       orb.x += orb.vx; orb.y += orb.vy;
       if (orb.x < -orb.r) orb.x = bgW + orb.r;
       if (orb.x > bgW + orb.r) orb.x = -orb.r;
       if (orb.y < -orb.r) orb.y = bgH + orb.r;
       if (orb.y > bgH + orb.r) orb.y = -orb.r;
-      orb.hue = (orb.hue + 0.05) % 360;
+      orb.hue = (orb.hue + 0.02) % 360;
       const grad = bgCtx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.r);
-      grad.addColorStop(0, 'hsla(' + orb.hue + ',70%,50%,' + orb.alpha + ')');
+      const s = orb.saturation || 70;
+      const l = orb.lightness || 45;
+      grad.addColorStop(0, 'hsla(' + orb.hue + ',' + s + '%,' + l + '%,' + orb.alpha + ')');
+      grad.addColorStop(0.6, 'hsla(' + orb.hue + ',' + (s - 10) + '%,' + (l - 10) + '%,' + (orb.alpha * 0.4) + ')');
       grad.addColorStop(1, 'transparent');
       bgCtx.fillStyle = grad;
       bgCtx.fillRect(orb.x - orb.r, orb.y - orb.r, orb.r * 2, orb.r * 2);
@@ -1656,33 +1679,80 @@
   }
 
   // ---- ADMOB INTEGRATION ----
-  const ADMOB_ENABLED = false;
+  // Strategy inspired by top casual puzzle games:
+  // - NO ads during gameplay (never interrupt flow)
+  // - Interstitial: shown between games (every 3rd game over), not on first game
+  // - Rewarded: optional — watch ad for second chance (undo last state)
+  // - Banner: small bottom banner only during game-over / menus (not during play)
+  const ADMOB_ENABLED = false; // Set true when real ad IDs are configured
   const ADMOB_BANNER_ID = 'ca-app-pub-XXXXXXXXXXXXX/XXXXXXXXXX';
   const ADMOB_INTERSTITIAL_ID = 'ca-app-pub-XXXXXXXXXXXXX/XXXXXXXXXX';
   const ADMOB_REWARDED_ID = 'ca-app-pub-XXXXXXXXXXXXX/XXXXXXXXXX';
 
   const AdMob = {
     isNative: typeof window.Capacitor !== 'undefined',
-    interstitialCount: 0, INTERSTITIAL_EVERY: 3,
+    interstitialCount: 0,
+    INTERSTITIAL_EVERY: 3,    // show interstitial every N game overs
+    INTERSTITIAL_MIN_GAMES: 1, // skip interstitial for first N games (good first impression)
+    rewardedReady: false,
     async init() {
       if (!this.isNative || !ADMOB_ENABLED) return;
       try {
         const { AdMob: CapAdMob } = await import('@capacitor-community/admob');
         this.plugin = CapAdMob;
         await this.plugin.initialize({ initializeForTesting: false });
-        this.showBanner();
+        // Pre-load interstitial & rewarded so they're ready instantly
+        this.preloadInterstitial();
+        this.preloadRewarded();
       } catch(e) { console.log('AdMob not available:', e.message); }
     },
-    async showBanner() { if (!this.plugin) return; try { await this.plugin.showBanner({ adId: ADMOB_BANNER_ID, adSize: 'BANNER', position: 'BOTTOM_CENTER' }); } catch(e) {} },
+    async showBanner() {
+      if (!this.plugin) return;
+      try { await this.plugin.showBanner({ adId: ADMOB_BANNER_ID, adSize: 'BANNER', position: 'BOTTOM_CENTER', margin: 0 }); } catch(e) {}
+    },
+    async hideBanner() {
+      if (!this.plugin) return;
+      try { await this.plugin.hideBanner(); } catch(e) {}
+    },
+    async preloadInterstitial() {
+      if (!this.plugin) return;
+      try { await this.plugin.prepareInterstitial({ adId: ADMOB_INTERSTITIAL_ID }); } catch(e) {}
+    },
+    async preloadRewarded() {
+      if (!this.plugin) return;
+      try {
+        await this.plugin.prepareRewardVideoAd({ adId: ADMOB_REWARDED_ID });
+        this.rewardedReady = true;
+      } catch(e) { this.rewardedReady = false; }
+    },
     async showInterstitial() {
       if (!this.plugin) return;
       this.interstitialCount++;
+      // Don't show on first game, and only every Nth game
+      if (this.interstitialCount <= this.INTERSTITIAL_MIN_GAMES) return;
       if (this.interstitialCount % this.INTERSTITIAL_EVERY !== 0) return;
-      try { await this.plugin.prepareInterstitial({ adId: ADMOB_INTERSTITIAL_ID }); await this.plugin.showInterstitial(); } catch(e) {}
+      try {
+        await this.plugin.showInterstitial();
+        // Pre-load next one
+        this.preloadInterstitial();
+      } catch(e) { this.preloadInterstitial(); }
     },
     async showRewarded() {
-      if (!this.plugin) return;
-      try { await this.plugin.prepareRewardVideoAd({ adId: ADMOB_REWARDED_ID }); const result = await this.plugin.showRewardVideoAd(); return result.type === 'earned'; } catch(e) { return false; }
+      if (!this.plugin) return false;
+      try {
+        const result = await this.plugin.showRewardVideoAd();
+        this.rewardedReady = false;
+        // Pre-load next one
+        this.preloadRewarded();
+        return result && result.type === 'earned';
+      } catch(e) {
+        this.rewardedReady = false;
+        this.preloadRewarded();
+        return false;
+      }
+    },
+    isRewardedReady() {
+      return this.isNative && ADMOB_ENABLED && this.rewardedReady;
     }
   };
 
@@ -1852,19 +1922,19 @@
     document.addEventListener('touchcancel', onDragEnd);
   }
 
-  // Dynamic touch offset: tablets (600px+) need less offset since pieces are bigger
-  // and the user's finger obscures less of the board
+  // Dynamic touch offset: keep ghost close to finger for accurate placement
+  // Reduced values so ghost sits just above the fingertip, not floating far away
   function getTouchYOffset() {
     const w = window.innerWidth;
-    if (w >= 1200) return 60;  // large tablet / chromebook
-    if (w >= 768) return 80;   // tablet
-    return 110;                // phone
+    if (w >= 1200) return 35;  // large tablet / chromebook — big screen, minimal offset
+    if (w >= 768) return 45;   // tablet — moderate offset
+    return 60;                 // phone — enough to see under thumb
   }
   function getSnapYOffset() {
     const w = window.innerWidth;
-    if (w >= 1200) return 50;
-    if (w >= 768) return 70;
-    return 100;
+    if (w >= 1200) return 30;
+    if (w >= 768) return 40;
+    return 50;
   }
 
   function moveGhost(e) {
@@ -2376,6 +2446,8 @@
   // ==================================================================
   // GAME OVER
   // ==================================================================
+  let secondChanceUsed = false; // only 1 second chance per game
+
   function gameOver() {
     gameActive = false;
     lastGameScore = score;
@@ -2427,10 +2499,20 @@
 
     gameOverEl.classList.add('show');
 
+    // Show "Second Chance" button if rewarded ad is ready and not used yet
+    const secondChanceBtn = $('btn-second-chance');
+    if (secondChanceBtn) {
+      secondChanceBtn.style.display = (!secondChanceUsed && undoState && AdMob.isRewardedReady()) ? 'inline-flex' : 'none';
+    }
+
+    // Show banner ad on game over screen (non-intrusive, at bottom)
+    AdMob.showBanner();
+
     // Submit to leaderboard & tournament
     fetch('/api/score', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'Player', score }) }).catch(() => {});
     submitTournamentScore(score);
 
+    // Interstitial between games (not on first game, every 3rd game)
     AdMob.showInterstitial();
 
     // Smart rate/review prompt
@@ -2443,12 +2525,14 @@
     gameOverEl.classList.remove('show');
     score = 0; combo = 0; maxCombo = 0; totalLinesCleared = 0;
     isNewRecord = false; undoState = null; undoAvailable = false;
-    displayScore = 0;
+    displayScore = 0; secondChanceUsed = false;
     scoreEl.textContent = '0';
     bestScoreEl.textContent = bestScore;
     gameActive = true;
     updateComboFire(0);
     deactivatePowerup();
+    // Hide banner during gameplay — clean, uninterrupted experience
+    AdMob.hideBanner();
     $('xp-gain').style.display = 'none';
     $('motivational-nudge').style.display = 'none';
     $('milestone-unlock').style.display = 'none';
@@ -2458,6 +2542,31 @@
     updatePowerupUI();
     saveGameState();
     resetSessionAnalytics();
+  }
+
+  // ---- SECOND CHANCE (Watch Rewarded Ad to Continue) ----
+  async function useSecondChance() {
+    if (secondChanceUsed || !undoState) return;
+    const earned = await AdMob.showRewarded();
+    if (earned) {
+      secondChanceUsed = true;
+      gameOverEl.classList.remove('show');
+      AdMob.hideBanner();
+      // Restore the board state before the final move that caused game over
+      board = undoState.board;
+      pieces = undoState.pieces;
+      score = undoState.score;
+      combo = undoState.combo;
+      maxCombo = undoState.maxCombo || maxCombo;
+      totalLinesCleared = undoState.totalLinesCleared || totalLinesCleared;
+      gameActive = true;
+      undoState = null; undoAvailable = false;
+      renderBoard(); renderPieces();
+      scoreEl.textContent = score;
+      displayScore = score;
+      vibrate(15); sfxPowerup();
+      saveGameState();
+    }
   }
 
   // ---- SHARE ----
@@ -2532,6 +2641,7 @@
   // ---- EVENT LISTENERS ----
   $('btn-restart').addEventListener('click', restart);
   $('btn-share').addEventListener('click', shareScore);
+  if ($('btn-second-chance')) $('btn-second-chance').addEventListener('click', useSecondChance);
 
   function exitGame() {
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
@@ -2610,15 +2720,32 @@
 
   // Handle resize (debounced) — important for tablet rotation & foldable devices
   let resizeTimer = null;
+  let lastOrientation = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
+
   function handleResize() {
     if (resizeTimer) clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       cachedBoardRect = null; cachedCells = null; // invalidate cached layout
-      initBgCanvas(); initFxCanvas(); initBoard(); renderBoard();
+      initBgCanvas(); initFxCanvas();
+
+      // Detect orientation change — need full re-render
+      const newOrientation = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
+      if (newOrientation !== lastOrientation) {
+        lastOrientation = newOrientation;
+        // Re-render everything for new layout
+        initBoard(); renderBoard(); renderPieces();
+      } else {
+        initBoard(); renderBoard();
+      }
     }, 150);
   }
   window.addEventListener('resize', handleResize);
-  window.addEventListener('orientationchange', () => setTimeout(handleResize, 200));
+  // orientationchange fires before dimensions update; wait a bit
+  window.addEventListener('orientationchange', () => setTimeout(handleResize, 300));
+  // Modern screen orientation API (more reliable than orientationchange)
+  if (screen.orientation) {
+    screen.orientation.addEventListener('change', () => setTimeout(handleResize, 300));
+  }
   // Android visual viewport changes (nav bar show/hide, foldable unfold)
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', handleResize);
