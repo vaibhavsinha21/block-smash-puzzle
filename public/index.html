@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#0a0a2e">
+  <meta name="theme-color" content="#0a0a1a">
   <meta name="description" content="Block Smash Puzzle — the addictive block puzzle game! Place blocks, clear lines, score big. Free to play.">
   <meta name="keywords" content="block puzzle, puzzle game, block smash, brain game, casual game">
   <meta property="og:title" content="Block Smash Puzzle">
@@ -18,443 +18,868 @@
     :root {
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
-      --board-size: min(calc(100vw - 24px), 420px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+      --board-size: min(calc(100vw - 32px), min(calc(100vh - 310px), 440px));
+      --board-size: min(calc(100vw - 32px), min(calc(100dvh - 310px), 440px));
       --cell-gap: 2px;
       --cell-size: calc((var(--board-size) - 16px - var(--cell-gap) * 7) / 8);
+      --piece-cell: clamp(16px, 4.5vw, 26px);
+      --ui-radius: 14px;
+      --bg-primary: #0a0a1a;
+      --bg-card: rgba(255,255,255,0.04);
+      --border-subtle: rgba(255,255,255,0.06);
+      --text-dim: rgba(255,255,255,0.35);
+      --accent-blue: #4d96ff;
+      --accent-purple: #a855f7;
+      --accent-gold: #ffd93d;
+      --accent-green: #6bcb77;
+      --accent-red: #ff6b6b;
+    }
+    /* === THEME OVERRIDES (set via JS) === */
+    body.theme-ocean { --bg-primary:#0a1628; --accent-blue:#00bcd4; --accent-purple:#26c6da; --accent-green:#00e5ff; --accent-red:#ff5252; --accent-gold:#ffab40; }
+    body.theme-sunset { --bg-primary:#1a0a0a; --accent-blue:#ff7043; --accent-purple:#ff5722; --accent-green:#ffab40; --accent-red:#e91e63; --accent-gold:#ffc107; }
+    body.theme-forest { --bg-primary:#0a1a0a; --accent-blue:#66bb6a; --accent-purple:#4caf50; --accent-green:#81c784; --accent-red:#ef5350; --accent-gold:#ffd54f; }
+    body.theme-neon { --bg-primary:#0a0020; --accent-blue:#00e5ff; --accent-purple:#e040fb; --accent-green:#76ff03; --accent-red:#ff1744; --accent-gold:#ffea00; }
+    body.theme-candy { --bg-primary:#1a0a1a; --accent-blue:#f48fb1; --accent-purple:#ce93d8; --accent-green:#80cbc4; --accent-red:#ef5350; --accent-gold:#fff176; }
+    body.theme-arctic { --bg-primary:#0a1420; --accent-blue:#81d4fa; --accent-purple:#b39ddb; --accent-green:#80cbc4; --accent-red:#ef9a9a; --accent-gold:#fff59d; }
+    body.theme-volcanic { --bg-primary:#1a0800; --accent-blue:#ff6e40; --accent-purple:#ff3d00; --accent-green:#ffa726; --accent-red:#d50000; --accent-gold:#ffd600; }
+    /* Seasonal theme overrides */
+    body.theme-halloween { --bg-primary:#0d0a00; --accent-blue:#ff6f00; --accent-purple:#9c27b0; --accent-green:#76ff03; --accent-red:#d50000; --accent-gold:#ff9100; }
+    body.theme-christmas { --bg-primary:#0a1008; --accent-blue:#1565c0; --accent-purple:#c62828; --accent-green:#2e7d32; --accent-red:#c62828; --accent-gold:#ffd600; }
+    body.theme-valentine { --bg-primary:#1a0810; --accent-blue:#f48fb1; --accent-purple:#e91e63; --accent-green:#f06292; --accent-red:#c2185b; --accent-gold:#ff80ab; }
+    body.theme-spring { --bg-primary:#081408; --accent-blue:#69f0ae; --accent-purple:#e040fb; --accent-green:#76ff03; --accent-red:#ff4081; --accent-gold:#ffff00; }
+    /* Accessibility: High Contrast */
+    body.a11y-high-contrast { --bg-primary:#000; --bg-card:rgba(255,255,255,0.12); --border-subtle:rgba(255,255,255,0.3); --text-dim:rgba(255,255,255,0.6); }
+    body.a11y-high-contrast .cell { border-width:2px !important; }
+    body.a11y-high-contrast .cell.filled { border-color:rgba(255,255,255,0.5) !important; }
+    /* Accessibility: Colorblind palettes — colors applied via JS */
+    body.a11y-deuteranopia { --cb-mode: deuteranopia; }
+    body.a11y-protanopia { --cb-mode: protanopia; }
+    body.a11y-tritanopia { --cb-mode: tritanopia; }
+
+    @media (min-width: 600px) {
+      :root {
+        --board-size: min(calc(100vw - 80px), min(calc(100dvh - 340px), 520px));
+        --piece-cell: clamp(20px, 3.5vw, 32px);
+        --cell-gap: 3px;
+      }
+    }
+    @media (min-width: 1024px) {
+      :root {
+        --board-size: min(480px, calc(100dvh - 360px));
+        --piece-cell: 28px;
+        --cell-gap: 3px;
+      }
+    }
+    /* === TABLET PORTRAIT (7-11") === */
+    @media (min-width: 600px) and (min-height: 800px) {
+      :root {
+        --board-size: min(calc(100vw - 100px), min(calc(100dvh - 400px), 560px));
+        --piece-cell: clamp(22px, 4vw, 36px);
+        --cell-gap: 3px;
+      }
+      body { font-size: 18px; }
+      .score-box { padding: 6px 18px; min-width: 80px; }
+      .score-box .label { font-size: 0.5em; }
+      .score-box .value { font-size: 1.4em; }
+      .gear-btn { padding: 8px 12px; font-size: 1.1em; }
+      .powerup-btn { padding: 8px 14px; font-size: 0.8em; gap: 6px; }
+      .powerup-btn .pu-count { width: 22px; height: 22px; font-size: 0.8em; }
+      .piece-slot { min-height: 100px; max-width: 170px; padding: 14px 8px; }
+      .daily-challenge { padding: 8px 16px; }
+      .daily-name { font-size: 0.65em; }
+      .daily-desc { font-size: 0.5em; }
+      .daily-progress-ring { font-size: 0.65em; }
+      .modal-panel { max-width: 460px; padding: 32px; }
+      .btn { padding: 16px 40px; font-size: 1.1em; }
+      .action-btn { font-size: 0.65em; padding: 6px 14px; }
+      #game-container { max-width: 640px; padding: calc(10px + var(--safe-top)) 20px calc(10px + var(--safe-bottom)); }
+    }
+    /* === TABLET LANDSCAPE (7-11") === */
+    @media (min-width: 900px) and (max-height: 800px) and (orientation: landscape) {
+      :root {
+        --board-size: min(calc(100dvh - 120px), calc(100vw * 0.42), 480px);
+        --piece-cell: clamp(18px, 3vw, 28px);
+        --cell-gap: 3px;
+      }
+      body { font-size: 16px; }
+      #game-container {
+        flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: flex-start;
+        max-width: 100%; padding: 8px 20px; gap: 10px;
+      }
+      .header { width: 100%; }
+      #board-container { order: 1; }
+      #pieces-container {
+        order: 2; flex-direction: column;
+        max-height: calc(100dvh - 80px); min-height: unset;
+        max-width: 220px; gap: 6px;
+      }
+      .piece-slot { min-height: 60px; }
+      #level-bar-container { display: none; }
+      .daily-challenge { display: none; }
+      #powerup-bar { width: auto; order: 3; flex-direction: column; gap: 4px; }
+    }
+    /* === LARGE TABLET / CHROMEBOOK (12"+) === */
+    @media (min-width: 1200px) and (min-height: 800px) {
+      :root {
+        --board-size: min(540px, calc(100dvh - 380px));
+        --piece-cell: 32px;
+        --cell-gap: 4px;
+      }
+      body { font-size: 20px; }
+      #game-container { max-width: 720px; }
+      .modal-panel { max-width: 520px; padding: 36px; }
+      .piece-slot { min-height: 110px; max-width: 200px; }
+    }
+    @media (max-height: 500px) and (orientation: landscape) {
+      :root {
+        --board-size: min(calc(100dvh - 100px), calc(100vw * 0.45));
+        --piece-cell: clamp(12px, 3vw, 20px);
+      }
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      background: linear-gradient(160deg, #0a0a2e 0%, #151545 40%, #0d0d3d 100%);
+      background: var(--bg-primary);
       color: #fff;
       overflow: hidden;
-      height: 100vh;
-      height: 100dvh;
+      height: 100vh; height: 100dvh;
       width: 100vw;
       touch-action: none;
       user-select: none;
       -webkit-user-select: none;
       -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
+      -webkit-overflow-scrolling: touch;
+    }
+    /* Android performance: reduce backdrop-filter on lower-end devices */
+    @supports not (backdrop-filter: blur(8px)) {
+      .score-box, .modal-overlay, .game-over-overlay, .modal-panel {
+        background-color: rgba(10,10,26,0.92) !important;
+      }
+    }
+    /* Minimum touch target for Android (48dp) */
+    .powerup-btn, .gear-btn, .action-btn, .btn, button {
+      min-height: 44px;
+      min-width: 44px;
+      touch-action: manipulation; /* eliminate 300ms tap delay on Android */
+    }
+    /* Respect system reduced-motion preference */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      #bg-canvas, #fx-canvas { opacity: 0 !important; }
+    }
+    #bg-canvas {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none; opacity: 0.5;
+    }
+    #fx-canvas {
+      position: fixed; inset: 0; z-index: 50;
+      pointer-events: none;
     }
 
-    /* === SPLASH SCREEN === */
+    /* === SPLASH === */
     #splash {
       position: fixed; inset: 0; z-index: 9999;
-      background: linear-gradient(160deg, #0a0a2e, #151545, #0d0d3d);
+      background: radial-gradient(ellipse at 50% 30%, #1a1a4e 0%, #0a0a1a 70%);
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      transition: opacity 0.5s;
+      transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
+      overflow: hidden;
     }
-    #splash.hide { opacity: 0; pointer-events: none; }
-    #splash .logo {
-      font-size: 2.2em; font-weight: 900;
-      background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text; margin-bottom: 20px;
+    #splash.hide { opacity: 0; transform: scale(1.05); pointer-events: none; }
+    .splash-blocks { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .splash-block {
+      position: absolute; border-radius: 8px; opacity: 0;
+      animation: floatBlock 5s ease-in-out infinite;
     }
-    #splash .loader {
-      width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1);
-      border-top-color: #4d96ff; border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+    @keyframes floatBlock {
+      0% { opacity: 0; transform: translateY(100vh) rotate(0deg) scale(0.5); }
+      15% { opacity: 0.4; } 85% { opacity: 0.25; }
+      100% { opacity: 0; transform: translateY(-20vh) rotate(360deg) scale(1.2); }
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .splash-logo-container {
+      position: relative; z-index: 2; text-align: center;
+      animation: logoEntry 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; opacity: 0;
+    }
+    @keyframes logoEntry {
+      0% { opacity: 0; transform: scale(0.3) translateY(40px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .splash-icon {
+      font-size: 5em; margin-bottom: 10px;
+      animation: iconBounce 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 40px rgba(77,150,255,0.5));
+    }
+    @keyframes iconBounce {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-12px) rotate(-5deg); }
+      75% { transform: translateY(-6px) rotate(5deg); }
+    }
+    .splash-title {
+      font-size: clamp(2.2em, 8vw, 3.5em); font-weight: 900; letter-spacing: 4px;
+      background: linear-gradient(135deg, #ff6b6b 0%, #ffd93d 25%, #6bcb77 50%, #4d96ff 75%, #a855f7 100%);
+      background-size: 300% 300%;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      animation: gradientShift 3s ease-in-out infinite;
+      filter: drop-shadow(0 3px 12px rgba(0,0,0,0.5));
+    }
+    @keyframes gradientShift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    .splash-subtitle {
+      font-size: clamp(0.7em, 3vw, 1em); opacity: 0.4; margin-top: 4px;
+      letter-spacing: 8px; text-transform: uppercase; font-weight: 800;
+    }
+    .splash-loader {
+      position: relative; z-index: 2;
+      width: min(240px, 60vw); height: 5px; margin-top: 40px;
+      background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden;
+      animation: fadeInUp 0.6s 0.3s both;
+    }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    .splash-loader-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-red), var(--accent-gold));
+      background-size: 300% 100%;
+      animation: loaderFill 2s ease-out forwards, loaderShimmer 1.5s linear infinite;
+      width: 0%;
+    }
+    @keyframes loaderFill { 0% { width: 0%; } 20% { width: 35%; } 50% { width: 70%; } 80% { width: 90%; } 100% { width: 100%; } }
+    @keyframes loaderShimmer { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }
+    .splash-tap {
+      position: relative; z-index: 2; margin-top: 36px; font-size: 1.1em; font-weight: 800;
+      opacity: 0; letter-spacing: 3px; color: rgba(255,255,255,0.85);
+      animation: tapAppear 0.5s 2s forwards; cursor: pointer;
+    }
+    .splash-tap.ready { animation: tapAppear 0.5s forwards, tapPulse 2s 0.5s ease-in-out infinite; }
+    @keyframes tapAppear { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes tapPulse { 0%, 100% { opacity: 0.7; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
+    .splash-version {
+      position: absolute; bottom: calc(20px + var(--safe-bottom)); z-index: 2;
+      font-size: 0.55em; opacity: 0.12; letter-spacing: 4px; font-weight: 600;
+    }
+    /* Seasonal splash overlay */
+    .splash-seasonal {
+      position: absolute; top: 12px; z-index:3; font-size:0.7em; font-weight:700;
+      padding:4px 14px; border-radius:20px;
+      background:linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,107,107,0.08));
+      border:1px solid rgba(255,215,0,0.2); animation: fadeInUp 0.6s 0.8s both;
+    }
 
     /* === GAME CONTAINER === */
     #game-container {
-      display: flex; flex-direction: column;
+      display: none; flex-direction: column;
       align-items: center; justify-content: flex-start;
       height: 100vh; height: 100dvh;
-      padding: calc(8px + var(--safe-top)) 10px calc(8px + var(--safe-bottom));
-      max-width: 500px; margin: 0 auto;
+      padding: calc(6px + var(--safe-top)) 14px calc(6px + var(--safe-bottom));
+      max-width: 560px; margin: 0 auto;
+      overflow: hidden; position: relative; z-index: 1;
+      animation: gameContainerIn 0.6s ease-out;
+    }
+    #game-container.show { display: flex; }
+    @keyframes gameContainerIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-height: 500px) and (orientation: landscape) {
+      #game-container {
+        flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: flex-start;
+        max-width: 100%; padding: 4px 12px; gap: 8px;
+      }
+      .header { width: 100%; }
+      #board-container { order: 1; }
+      #pieces-container { order: 2; flex-direction: column; max-height: calc(100dvh - 60px); min-height: unset; max-width: 180px; gap: 4px; }
+      .piece-slot { min-height: 50px; }
+      #level-bar-container, .daily-challenge, #powerup-bar { display: none; }
     }
 
     /* === HEADER === */
     .header {
-      display: flex; justify-content: space-between;
-      align-items: center; width: 100%; padding: 4px 0 8px;
+      display: flex; justify-content: space-between; align-items: center;
+      width: 100%; padding: 2px 0 4px; flex-shrink: 0;
     }
     .game-title {
-      font-size: 1.15em; font-weight: 900; letter-spacing: -0.5px;
-      background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
+      font-size: clamp(0.9em, 4vw, 1.2em); font-weight: 900; letter-spacing: 1.5px;
+      background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff);
+      background-size: 200% 200%;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      animation: gradientShift 4s ease-in-out infinite;
     }
-    .score-section { display: flex; gap: 10px; }
+    .header-right { display: flex; align-items: center; gap: 6px; }
+    .score-section { display: flex; gap: 6px; }
     .score-box {
-      text-align: center; background: rgba(255,255,255,0.06);
-      border-radius: 10px; padding: 5px 12px; min-width: 65px;
-      backdrop-filter: blur(10px);
+      text-align: center; background: var(--bg-card);
+      border-radius: 12px; padding: 4px 14px; min-width: 68px;
+      border: 1px solid var(--border-subtle); backdrop-filter: blur(8px);
     }
-    .score-box .label { font-size: 0.55em; opacity: 0.5; text-transform: uppercase; letter-spacing: 1.5px; }
-    .score-box .value { font-size: 1.25em; font-weight: 800; }
-    .new-best { color: #ffd93d !important; animation: pulse 0.5s ease-in-out; }
+    .score-box .label { font-size: 0.45em; opacity: 0.35; text-transform: uppercase; letter-spacing: 2.5px; font-weight: 700; }
+    .score-box .value { font-size: 1.3em; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .score-box:last-child .value { color: var(--accent-gold); }
+    .new-best { color: var(--accent-gold) !important; animation: pulse 0.5s ease-in-out; }
     @keyframes pulse { 50% { transform: scale(1.3); } }
+    .gear-btn {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: 10px; cursor: pointer; padding: 5px 8px;
+      opacity: 0.5; transition: all 0.2s; font-size: 0.95em; color: #fff;
+    }
+    .gear-btn:active { opacity: 1; transform: scale(0.92); }
+
+    /* === LEVEL BAR === */
+    #level-bar-container { width: 100%; padding: 1px 0; flex-shrink: 0; }
+    .level-info { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+    #level-badge {
+      font-size: 0.62em; font-weight: 800; color: var(--accent-gold);
+      background: rgba(255,215,0,0.06); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(255,215,0,0.1);
+    }
+    .level-title-text { font-size: 0.52em; opacity: 0.3; text-transform: uppercase; letter-spacing: 1.5px; }
+    .streak-badge { font-size: 0.58em; font-weight: 700; color: var(--accent-red); margin-left: auto; }
+    .xp-bar-bg { width: 100%; height: 3px; background: rgba(255,255,255,0.04); border-radius: 2px; overflow: hidden; }
+    .xp-bar-fill {
+      height: 100%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+      border-radius: 2px; transition: width 0.6s ease-out; box-shadow: 0 0 8px rgba(77,150,255,0.3);
+    }
+    .xp-label { font-size: 0.45em; opacity: 0.18; text-align: right; margin-top: 1px; }
+
+    /* === DAILY CHALLENGE === */
+    .daily-challenge {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(135deg, rgba(255,107,107,0.04), rgba(77,150,255,0.04));
+      border: 1px solid var(--border-subtle); border-radius: 10px; padding: 4px 12px; margin-bottom: 2px; flex-shrink: 0;
+    }
+    .daily-challenge.completed {
+      background: linear-gradient(135deg, rgba(107,203,119,0.08), rgba(107,203,119,0.02));
+      border-color: rgba(107,203,119,0.15);
+    }
+    .daily-left { display: flex; align-items: center; gap: 6px; }
+    .daily-icon { font-size: 1em; }
+    .daily-name { font-size: 0.58em; font-weight: 700; }
+    .daily-desc { font-size: 0.45em; opacity: 0.3; }
+    .daily-progress-ring { font-size: 0.58em; font-weight: 800; color: var(--accent-gold); min-width: 32px; text-align: center; }
+
+    /* === POWER-UPS BAR === */
+    #powerup-bar {
+      width:100%; display:flex; justify-content:center; gap:8px;
+      padding:3px 0; flex-shrink:0;
+    }
+    .powerup-btn {
+      display:flex; align-items:center; gap:4px;
+      background:var(--bg-card); border:1px solid var(--border-subtle);
+      border-radius:10px; padding:4px 10px; cursor:pointer;
+      transition:all 0.2s; font-size:0.7em; color:#fff; font-family:inherit; font-weight:700;
+      position:relative; overflow:hidden;
+    }
+    .powerup-btn:active { transform:scale(0.93); }
+    .powerup-btn.disabled { opacity:0.2; pointer-events:none; filter:grayscale(1); }
+    .powerup-btn .pu-icon { font-size:1.3em; }
+    .powerup-btn .pu-count {
+      font-size:0.75em; font-weight:900; background:rgba(255,255,255,0.1);
+      border-radius:50%; width:18px; height:18px; display:flex; align-items:center; justify-content:center;
+    }
+    .powerup-btn.ready {
+      border-color:var(--accent-gold); box-shadow:0 0 12px rgba(255,215,0,0.15);
+      animation: puGlow 2s ease-in-out infinite;
+    }
+    @keyframes puGlow { 0%,100%{box-shadow:0 0 8px rgba(255,215,0,0.1);} 50%{box-shadow:0 0 16px rgba(255,215,0,0.25);} }
+    .powerup-btn .pu-cooldown {
+      position:absolute; inset:0; background:rgba(0,0,0,0.5);
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.2em; font-weight:900; display:none;
+    }
+    .powerup-btn.on-cooldown .pu-cooldown { display:flex; }
 
     /* === BOARD === */
-    #board-container { position: relative; margin: 6px 0; }
+    #board-container { position: relative; margin: 3px 0; flex-shrink: 0; }
+    #board-container.shake { animation: boardShake 0.35s ease-out; }
+    @keyframes boardShake {
+      0% { transform: translate(0, 0); } 15% { transform: translate(-3px, 2px); }
+      30% { transform: translate(3px, -2px); } 45% { transform: translate(-2px, 1px); }
+      60% { transform: translate(2px, -1px); } 75% { transform: translate(-1px, 1px); }
+      100% { transform: translate(0, 0); }
+    }
+    #board-container.shake-heavy { animation: boardShakeHeavy 0.45s ease-out; }
+    @keyframes boardShakeHeavy {
+      0% { transform: translate(0, 0); } 10% { transform: translate(-5px, 4px); }
+      20% { transform: translate(5px, -3px); } 30% { transform: translate(-4px, 3px); }
+      40% { transform: translate(4px, -2px); } 50% { transform: translate(-3px, 2px); }
+      60% { transform: translate(3px, -2px); } 70% { transform: translate(-2px, 1px); }
+      80% { transform: translate(2px, -1px); } 100% { transform: translate(0, 0); }
+    }
+    .board-toolbar { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 3px; }
     #board {
       display: grid; grid-template-columns: repeat(8, var(--cell-size));
-      gap: var(--cell-gap); background: rgba(255,255,255,0.04);
-      border-radius: 12px; padding: 8px;
-      border: 1.5px solid rgba(255,255,255,0.06);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+      gap: var(--cell-gap);
+      background: rgba(12, 12, 35, 0.9);
+      border-radius: 16px; padding: 8px;
+      border: 1.5px solid rgba(255,255,255,0.04);
+      box-shadow: 0 12px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03);
+      position: relative;
+    }
+    #board::before {
+      content: ''; position: absolute; inset: 8px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px),
+                  linear-gradient(0deg, rgba(255,255,255,0.012) 1px, transparent 1px);
+      background-size: calc(100% / 8) calc(100% / 8);
+      pointer-events: none; border-radius: 8px; z-index: 0;
     }
     .cell {
       width: var(--cell-size); height: var(--cell-size);
-      border-radius: 4px; background: rgba(255,255,255,0.025);
-      border: 1px solid rgba(255,255,255,0.03);
-      transition: background 0.12s, transform 0.12s, box-shadow 0.12s;
+      border-radius: 6px; background: rgba(255,255,255,0.018);
+      border: 1px solid rgba(255,255,255,0.025);
+      transition: all 0.12s ease-out;
+      will-change: background, transform, opacity;
+      position: relative; z-index: 1;
     }
+    body.dragging .cell { transition: none !important; }
     .cell.filled {
       border: 1px solid rgba(255,255,255,0.15);
-      box-shadow: inset 0 -2px 4px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.15), 0 1px 3px rgba(0,0,0,0.2);
+      border-radius: 6px; position: relative; box-shadow: none;
+    }
+    .cell.filled::before {
+      content: ''; position: absolute; inset: 1px 1px auto 1px; height: 40%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 100%);
+      border-radius: 5px 5px 50% 50%; pointer-events: none;
+    }
+    .cell.filled::after {
+      content: ''; position: absolute; inset: auto 2px 1px 2px; height: 30%;
+      background: linear-gradient(0deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0) 100%);
+      border-radius: 0 0 4px 4px; pointer-events: none;
+    }
+    /* Accessibility: pattern overlay for colorblind users */
+    .cell.filled.a11y-pattern::after {
+      content:''; position:absolute; inset:2px;
+      background-image:var(--cell-pattern); background-size:6px 6px;
+      opacity:0.4; pointer-events:none; border-radius:4px;
     }
     .cell.preview {
-      background: rgba(255,255,255,0.12) !important;
-      border: 1.5px dashed rgba(255,255,255,0.25) !important;
-      transform: scale(0.95);
+      border: 1.5px solid rgba(255,255,255,0.45) !important;
+      transform: scale(0.92);
+      box-shadow: 0 0 12px rgba(255,255,255,0.15), inset 0 0 8px rgba(255,255,255,0.1);
+      border-radius: 6px; z-index: 2;
     }
-    .cell.invalid-preview {
-      background: rgba(255,60,60,0.15) !important;
-      border: 1.5px dashed rgba(255,60,60,0.3) !important;
-    }
-    .cell.clearing { animation: clearPop 0.4s ease-out forwards; }
+    .cell.invalid-preview { background: rgba(255,60,60,0.12) !important; border: 1.5px dashed rgba(255,60,60,0.3) !important; }
+    .cell.clearing { animation: clearPop 0.45s cubic-bezier(.4,0,.2,1) forwards; }
     @keyframes clearPop {
-      0% { transform: scale(1); opacity: 1; }
-      40% { transform: scale(1.15); opacity: 0.9; }
-      100% { transform: scale(0); opacity: 0; background: transparent; border-color: transparent; box-shadow: none; }
+      0% { transform: scale(1) rotate(0deg); opacity: 1; }
+      30% { transform: scale(1.15) rotate(2deg); opacity: 0.9; }
+      100% { transform: scale(0) rotate(8deg); opacity: 0; background: transparent; border-color: transparent; }
     }
-    .cell.row-hint, .cell.col-hint {
-      box-shadow: inset 0 0 8px rgba(255,215,0,0.3);
+    .cell.row-hint, .cell.col-hint { box-shadow: inset 0 0 8px rgba(255,215,0,0.15); border-color: rgba(255,215,0,0.12); }
+    #board.combo-glow {
+      box-shadow: 0 12px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04),
+                  0 0 30px rgba(255,215,0,0.12), 0 0 60px rgba(255,107,107,0.08);
+      transition: box-shadow 0.3s ease-out;
     }
+    .cell.just-placed { animation: blockLand 0.25s cubic-bezier(.4,0,.2,1); }
+    @keyframes blockLand { 0% { transform: scale(0.6); opacity: 0.5; } 60% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
+    /* Power-up target mode */
+    .cell.bomb-target { border:2px solid var(--accent-red) !important; animation:bombTarget 0.6s ease-in-out infinite; cursor:crosshair; }
+    @keyframes bombTarget { 0%,100%{box-shadow:0 0 8px rgba(255,60,60,0.3);} 50%{box-shadow:0 0 16px rgba(255,60,60,0.6);} }
+    .cell.bomb-area { background:rgba(255,60,60,0.15) !important; border-color:rgba(255,60,60,0.3) !important; }
 
-    /* === PIECES === */
+    /* === PIECES TRAY === */
     #pieces-container {
-      display: flex; justify-content: space-around; align-items: center;
-      width: 100%; padding: 10px 0; gap: 8px; min-height: 90px;
+      display: flex; justify-content: center; align-items: center;
+      width: 100%; padding: 6px 2px; gap: 8px;
+      flex-shrink: 0; flex-grow: 1;
+      max-height: 160px; min-height: 90px;
     }
     .piece-slot {
       display: flex; align-items: center; justify-content: center;
-      flex: 1; padding: 8px; background: rgba(255,255,255,0.035);
-      border-radius: 12px; cursor: grab; min-height: 75px;
-      transition: transform 0.2s, background 0.2s, opacity 0.3s;
-      border: 1.5px solid rgba(255,255,255,0.04);
+      flex: 1; padding: 10px 6px;
+      background: var(--bg-card); border-radius: var(--ui-radius); cursor: grab;
+      min-height: 85px; max-width: 140px;
+      transition: transform 0.25s cubic-bezier(.4,0,.2,1), background 0.2s, opacity 0.3s, box-shadow 0.2s;
+      border: 1.5px solid var(--border-subtle); position: relative; overflow: hidden;
     }
-    .piece-slot:active { cursor: grabbing; }
-    .piece-slot.dragging { opacity: 0.2; transform: scale(0.9); }
-    .piece-slot.cannot-fit { opacity: 0.35; filter: grayscale(0.5); }
-    .piece-grid { display: grid; gap: 2px; pointer-events: none; }
-    .piece-cell {
-      width: clamp(12px, 3.2vw, 18px); height: clamp(12px, 3.2vw, 18px);
-      border-radius: 3px; pointer-events: none;
+    .piece-slot::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 50%, rgba(255,255,255,0.02) 100%);
+      pointer-events: none;
     }
-    .piece-cell.active {
-      box-shadow: inset 0 -2px 3px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.15);
+    .piece-slot:active { cursor: grabbing; background: rgba(255,255,255,0.06); transform: scale(0.95); }
+    .piece-slot.dragging { opacity: 0.12; transform: scale(0.8); }
+    .piece-slot.cannot-fit { opacity: 0.15; filter: grayscale(0.8) brightness(0.5); }
+    .piece-grid { display: grid; gap: 3px; pointer-events: none; }
+    .piece-cell { width: var(--piece-cell); height: var(--piece-cell); border-radius: 5px; pointer-events: none; position: relative; }
+    .piece-cell.active { border: 1px solid rgba(255,255,255,0.12); }
+    .piece-cell.active::before {
+      content: ''; position: absolute; inset: 1px 1px auto 1px; height: 40%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 100%);
+      border-radius: 4px 4px 50% 50%; pointer-events: none;
     }
     .piece-cell.empty { background: transparent; }
 
     /* === DRAG GHOST === */
     #drag-ghost {
-      position: fixed; pointer-events: none; z-index: 1000; display: none; opacity: 0.85;
+      position: fixed; pointer-events: none; z-index: 1000; display: none;
+      opacity: 0.92; filter: drop-shadow(0 8px 24px rgba(0,0,0,0.7));
+      will-change: transform; left: 0; top: 0;
     }
-    #drag-ghost .piece-grid { gap: 2px; }
-    #drag-ghost .piece-cell {
-      width: var(--cell-size); height: var(--cell-size); border-radius: 4px;
+    #drag-ghost .piece-grid { gap: var(--cell-gap, 2px); }
+    #drag-ghost .piece-cell { width: var(--cell-size); height: var(--cell-size); border-radius: 6px; }
+    #drag-ghost .piece-cell.active { border: 1px solid rgba(255,255,255,0.15); }
+    #drag-ghost .piece-cell.active::before {
+      content: ''; position: absolute; inset: 1px 1px auto 1px; height: 40%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%);
+      border-radius: 5px 5px 50% 50%; pointer-events: none;
     }
 
-    /* === COMBO / SCORE POPUPS === */
+    /* === POPUPS === */
     .combo-popup {
       position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%); font-size: 2.2em; font-weight: 900;
+      transform: translate(-50%, -50%); font-size: clamp(1.8em, 6vw, 2.8em); font-weight: 900;
       pointer-events: none; z-index: 100;
-      animation: comboFloat 1s ease-out forwards;
-      text-shadow: 0 0 20px rgba(255,215,0,0.6);
+      animation: comboFloat 1.2s cubic-bezier(.4,0,.2,1) forwards;
+      text-shadow: 0 0 40px currentColor, 0 2px 8px rgba(0,0,0,0.5); letter-spacing: 2px;
     }
     @keyframes comboFloat {
-      0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
-      25% { opacity: 1; transform: translate(-50%, -65%) scale(1.15); }
-      100% { opacity: 0; transform: translate(-50%, -110%) scale(0.9); }
+      0% { opacity: 1; transform: translate(-50%, -50%) scale(0.3) rotate(-5deg); }
+      20% { opacity: 1; transform: translate(-50%, -65%) scale(1.3) rotate(2deg); }
+      100% { opacity: 0; transform: translate(-50%, -130%) scale(0.7) rotate(0deg); }
     }
     .score-float {
-      position: absolute; font-size: 1.3em; font-weight: 800;
-      color: #ffd93d; pointer-events: none; z-index: 100;
-      animation: scoreUp 0.7s ease-out forwards;
+      position: absolute; font-size: 1.3em; font-weight: 900;
+      color: var(--accent-gold); pointer-events: none; z-index: 100;
+      animation: scoreUp 0.8s ease-out forwards;
+      text-shadow: 0 0 12px rgba(255,215,0,0.4), 0 1px 4px rgba(0,0,0,0.5);
     }
-    @keyframes scoreUp {
-      0% { opacity: 1; transform: translateY(0) scale(1); }
-      100% { opacity: 0; transform: translateY(-35px) scale(0.8); }
+    @keyframes scoreUp { 0% { opacity: 1; transform: translateY(0) scale(1.1); } 100% { opacity: 0; transform: translateY(-45px) scale(0.7); } }
+    .perfect-popup {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%); font-size: clamp(1.5em, 5vw, 2.2em); font-weight: 900;
+      pointer-events: none; z-index: 110; color: var(--accent-gold);
+      animation: perfectFloat 1.8s cubic-bezier(.4,0,.2,1) forwards;
+      text-shadow: 0 0 50px rgba(255,215,0,0.6), 0 0 100px rgba(255,215,0,0.3); letter-spacing: 4px;
+    }
+    @keyframes perfectFloat {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+      20% { opacity: 1; transform: translate(-50%, -55%) scale(1.2); }
+      60% { opacity: 1; transform: translate(-50%, -60%) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -80%) scale(0.8); }
+    }
+    /* Power-up activation popup */
+    .powerup-popup {
+      position: absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      font-size:clamp(1.5em,5vw,2.2em); font-weight:900;
+      pointer-events:none; z-index:120;
+      animation:powerupActivate 1s cubic-bezier(.4,0,.2,1) forwards;
+      text-shadow:0 0 30px currentColor;
+    }
+    @keyframes powerupActivate {
+      0% { opacity:0; transform:translate(-50%,-50%) scale(0.2) rotate(-10deg); }
+      30% { opacity:1; transform:translate(-50%,-55%) scale(1.4) rotate(3deg); }
+      100% { opacity:0; transform:translate(-50%,-80%) scale(0.6) rotate(0); }
     }
 
     /* === GAME OVER === */
     #game-over {
       display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.88); z-index: 200;
+      background: rgba(5,5,15,0.94); z-index: 200;
       flex-direction: column; align-items: center; justify-content: center;
-      gap: 16px; backdrop-filter: blur(12px);
-      padding: var(--safe-top) 20px var(--safe-bottom);
+      gap: 14px; backdrop-filter: blur(20px);
+      padding: var(--safe-top) 24px var(--safe-bottom);
+      overflow-y:auto;
     }
-    #game-over.show { display: flex; animation: fadeIn 0.4s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    #game-over.show { display: flex; animation: gameOverIn 0.5s ease-out; }
+    @keyframes gameOverIn { from { opacity: 0; } to { opacity: 1; } }
     #game-over h2 {
-      font-size: 2.4em; font-weight: 900;
-      background: linear-gradient(90deg, #ff6b6b, #ffd93d);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      font-size: clamp(2em, 7vw, 2.8em); font-weight: 900; letter-spacing: 4px;
+      background: linear-gradient(135deg, var(--accent-red), var(--accent-gold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      filter: drop-shadow(0 2px 10px rgba(255,107,107,0.3));
     }
-    #game-over .final-score { font-size: 3em; font-weight: 900; }
-    #game-over .best-label { font-size: 0.9em; opacity: 0.5; }
-    #game-over .best-score { font-size: 1.4em; font-weight: 700; color: #ffd93d; }
+    #game-over .final-score { font-size: clamp(2.5em, 10vw, 4em); font-weight: 900; text-shadow: 0 0 40px rgba(255,255,255,0.1); }
+    #game-over .best-label { font-size: 0.75em; opacity: 0.3; letter-spacing: 3px; text-transform: uppercase; }
+    #game-over .best-score { font-size: 1.4em; font-weight: 800; color: var(--accent-gold); }
     #game-over .new-record {
-      font-size: 1em; color: #6bcb77; font-weight: 700;
+      font-size: 1.1em; color: var(--accent-green); font-weight: 800;
       animation: pulse 0.6s ease-in-out infinite alternate;
+      text-shadow: 0 0 15px rgba(107,203,119,0.4);
     }
     .btn-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
     .btn {
-      padding: 13px 32px; font-size: 1em; font-weight: 700;
+      padding: 14px 34px; font-size: 1.05em; font-weight: 800;
       border: none; border-radius: 50px; cursor: pointer;
       transition: transform 0.15s, box-shadow 0.15s; color: #fff;
+      letter-spacing: 0.5px; font-family: inherit;
     }
-    .btn:active { transform: scale(0.95); }
-    .btn-primary { background: linear-gradient(135deg, #6bcb77, #4d96ff); box-shadow: 0 4px 15px rgba(75,150,255,0.3); }
-    .btn-share { background: linear-gradient(135deg, #ff6b6b, #ffd93d); box-shadow: 0 4px 15px rgba(255,107,107,0.3); }
-    .btn-secondary { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); }
+    .btn:active { transform: scale(0.93); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+      box-shadow: 0 4px 24px rgba(75,150,255,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+    .btn-share {
+      background: linear-gradient(135deg, var(--accent-red), var(--accent-gold));
+      box-shadow: 0 4px 24px rgba(255,107,107,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+    .btn-secondary { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); }
+    .btn-exit {
+      background: rgba(255,60,60,0.1); border: 1px solid rgba(255,60,60,0.15);
+      color: var(--accent-red); font-size: 0.9em; padding: 10px 28px;
+    }
+    .btn-exit:active { background: rgba(255,60,60,0.2); }
 
-    /* === AD BANNER === */
     .ad-banner-slot {
       width: 100%; max-width: 320px; height: 50px;
-      background: rgba(255,255,255,0.03); border-radius: 8px;
+      background: rgba(255,255,255,0.01); border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.65em; opacity: 0.2; margin-top: auto; margin-bottom: 4px;
+      font-size: 0.65em; opacity: 0.08; flex-shrink: 0;
     }
+    .action-btn {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      color: #fff; font-size: 0.58em; font-weight: 700; padding: 4px 10px;
+      border-radius: 8px; cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .action-btn:active { transform: scale(0.93); background: rgba(255,255,255,0.08); }
 
-    /* === PARTICLES === */
-    .particle {
-      position: absolute; border-radius: 50%; pointer-events: none; z-index: 50;
+    /* === MODALS (shared) === */
+    .modal-overlay {
+      display:none; position:fixed; inset:0;
+      background:rgba(5,5,15,0.92); z-index:300;
+      flex-direction:column; align-items:center; justify-content:center;
+      gap:16px; backdrop-filter:blur(18px);
     }
-
-    /* === SETTINGS MODAL === */
-    #settings-modal {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.85); z-index: 300;
-      flex-direction: column; align-items: center; justify-content: center;
-      gap: 16px; backdrop-filter: blur(10px);
+    .modal-overlay.show { display:flex; animation:fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal-panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+      border: 1px solid var(--border-subtle);
+      border-radius: 22px; padding: 26px; width: 88%; max-width: 380px;
+      max-height:80vh; overflow-y:auto; -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain; /* prevent scroll chaining on Android */
     }
-    #settings-modal.show { display: flex; }
-    .settings-panel {
-      background: rgba(255,255,255,0.08); border-radius: 16px;
-      padding: 24px; width: 85%; max-width: 320px;
-    }
-    .settings-panel h3 { margin-bottom: 16px; font-size: 1.3em; }
+    .modal-panel h3 { margin-bottom: 16px; font-size: 1.3em; font-weight: 800; }
     .setting-row {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.95em;
     }
     .setting-row:last-child { border-bottom: none; }
     .toggle {
-      width: 44px; height: 24px; background: rgba(255,255,255,0.15);
-      border-radius: 12px; cursor: pointer; position: relative;
-      transition: background 0.2s;
+      width: 50px; height: 28px; background: rgba(255,255,255,0.08);
+      border-radius: 14px; cursor: pointer; position: relative; transition: background 0.25s;
     }
-    .toggle.on { background: #4d96ff; }
+    .toggle.on { background: var(--accent-blue); }
     .toggle::after {
-      content: ''; position: absolute; top: 2px; left: 2px;
-      width: 20px; height: 20px; background: #fff;
-      border-radius: 50%; transition: transform 0.2s;
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 22px; height: 22px; background: #fff;
+      border-radius: 50%; transition: transform 0.25s cubic-bezier(.4,0,.2,1);
+      box-shadow: 0 1px 6px rgba(0,0,0,0.3);
     }
-    .toggle.on::after { transform: translateX(20px); }
+    .toggle.on::after { transform: translateX(22px); }
 
-    /* Gear icon */
-    .gear-btn {
-      background: none; border: none; cursor: pointer; padding: 4px;
-      opacity: 0.5; transition: opacity 0.2s; font-size: 1.2em;
-    }
-    .gear-btn:hover { opacity: 1; }
-
-    /* === LEVEL / XP BAR === */
-    #level-bar-container {
-      width: 100%; padding: 2px 0 4px; margin-bottom: 2px;
-    }
-    .level-info {
-      display: flex; align-items: center; gap: 8px; margin-bottom: 3px;
-    }
-    #level-badge {
-      font-size: 0.75em; font-weight: 800; color: #ffd93d;
-      background: rgba(255,215,0,0.12); padding: 2px 8px;
-      border-radius: 8px; border: 1px solid rgba(255,215,0,0.2);
-    }
-    .level-title-text { font-size: 0.65em; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; }
-    .streak-badge {
-      font-size: 0.7em; font-weight: 700; color: #ff6b6b;
-      margin-left: auto;
-    }
-    .xp-bar-bg {
-      width: 100%; height: 5px; background: rgba(255,255,255,0.08);
-      border-radius: 3px; overflow: hidden;
-    }
-    .xp-bar-fill {
-      height: 100%; background: linear-gradient(90deg, #4d96ff, #a855f7);
-      border-radius: 3px; transition: width 0.6s ease-out;
-    }
-    .xp-label { font-size: 0.55em; opacity: 0.35; text-align: right; margin-top: 1px; }
-
-    /* === DAILY CHALLENGE === */
-    .daily-challenge {
-      width: 100%; display: flex; align-items: center;
-      justify-content: space-between;
-      background: linear-gradient(135deg, rgba(255,107,107,0.1), rgba(77,150,255,0.1));
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 10px; padding: 6px 12px; margin-bottom: 4px;
-    }
-    .daily-challenge.completed {
-      background: linear-gradient(135deg, rgba(107,203,119,0.15), rgba(107,203,119,0.05));
-      border-color: rgba(107,203,119,0.3);
-    }
-    .daily-left { display: flex; align-items: center; gap: 8px; }
-    .daily-icon { font-size: 1.3em; }
-    .daily-name { font-size: 0.7em; font-weight: 700; }
-    .daily-desc { font-size: 0.55em; opacity: 0.5; }
-    .daily-progress-ring {
-      font-size: 0.7em; font-weight: 800; color: #ffd93d;
-      min-width: 36px; text-align: center;
-    }
-
-    /* === GAME OVER ADDITIONS === */
     .xp-gain {
-      font-size: 1.1em; font-weight: 700; color: #a855f7;
-      animation: xpPop 0.6s ease-out;
+      font-size: 1.1em; font-weight: 800; color: var(--accent-purple);
+      animation: xpPop 0.6s ease-out; text-shadow: 0 0 15px rgba(168,85,247,0.35);
     }
-    @keyframes xpPop {
-      0% { opacity: 0; transform: scale(0.5) translateY(10px); }
-      50% { opacity: 1; transform: scale(1.15) translateY(-5px); }
-      100% { opacity: 1; transform: scale(1) translateY(0); }
-    }
-    .motivational-nudge {
-      font-size: 0.85em; opacity: 0.7; max-width: 260px;
-      text-align: center; line-height: 1.4;
-    }
+    @keyframes xpPop { 0% { opacity: 0; transform: scale(0.5) translateY(10px); } 50% { opacity: 1; transform: scale(1.15) translateY(-5px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+    .motivational-nudge { font-size: 0.82em; opacity: 0.5; max-width: 280px; text-align: center; line-height: 1.6; }
     .milestone-unlock {
-      display: flex; align-items: center; gap: 10px;
-      background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,107,107,0.1));
-      border: 1px solid rgba(255,215,0,0.3); border-radius: 12px;
-      padding: 10px 16px; animation: milestoneSlide 0.5s ease-out;
+      display: flex; align-items: center; gap: 14px;
+      background: linear-gradient(135deg, rgba(255,215,0,0.08), rgba(255,107,107,0.04));
+      border: 1px solid rgba(255,215,0,0.15); border-radius: var(--ui-radius);
+      padding: 14px 20px; animation: milestoneSlide 0.5s ease-out;
     }
-    @keyframes milestoneSlide {
-      0% { opacity: 0; transform: translateY(20px) scale(0.9); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    .milestone-icon { font-size: 2em; }
-    .milestone-label { font-size: 0.6em; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; }
-    #milestone-name { font-size: 0.9em; font-weight: 700; color: #ffd93d; }
+    @keyframes milestoneSlide { 0% { opacity: 0; transform: translateY(20px) scale(0.9); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+    .milestone-icon { font-size: 2.2em; }
+    .milestone-label { font-size: 0.5em; opacity: 0.3; text-transform: uppercase; letter-spacing: 2px; }
+    #milestone-name { font-size: 0.95em; font-weight: 800; color: var(--accent-gold); }
 
-    /* Level-up overlay */
+    /* Level Up Overlay */
     #level-up-overlay {
       display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.7); z-index: 250;
+      background: rgba(5,5,15,0.85); z-index: 250;
       flex-direction: column; align-items: center; justify-content: center;
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(12px);
     }
     #level-up-overlay.show { display: flex; animation: fadeIn 0.3s ease-out; }
-    .level-up-content {
-      text-align: center; animation: levelUpBounce 0.6s ease-out;
-    }
-    @keyframes levelUpBounce {
-      0% { opacity: 0; transform: scale(0.3); }
-      50% { transform: scale(1.1); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-    .level-up-icon { font-size: 3em; }
-    .level-up-text { font-size: 1.8em; font-weight: 900; color: #ffd93d; margin: 8px 0; }
-    .level-up-title { font-size: 1em; opacity: 0.6; }
+    .level-up-content { text-align: center; animation: levelUpBounce 0.6s ease-out; }
+    @keyframes levelUpBounce { 0% { opacity: 0; transform: scale(0.3); } 50% { transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+    .level-up-icon { font-size: 3.5em; }
+    .level-up-text { font-size: 2em; font-weight: 900; color: var(--accent-gold); margin: 8px 0; }
+    .level-up-title { font-size: 1em; opacity: 0.5; }
+    /* Unlocked items during level up */
+    .level-up-rewards { margin-top:10px; font-size:0.85em; color:var(--accent-green); }
 
-    /* === STATS MODAL === */
-    #stats-modal {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.85); z-index: 300;
-      flex-direction: column; align-items: center; justify-content: center;
-      gap: 16px; backdrop-filter: blur(10px);
+    /* === THEMES STORE === */
+    .theme-grid {
+      display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin:12px 0;
     }
-    #stats-modal.show { display: flex; }
-    .stats-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    @media (min-width: 600px) {
+      .theme-grid { grid-template-columns:repeat(3,1fr); gap:12px; }
+      .theme-card .theme-swatch { width:20px; height:20px; }
     }
+    .theme-card {
+      padding:14px 10px; border-radius:14px; text-align:center; cursor:pointer;
+      border:2px solid transparent; transition:all 0.2s; position:relative;
+    }
+    .theme-card:active { transform:scale(0.95); }
+    .theme-card.active { border-color:var(--accent-gold); box-shadow:0 0 15px rgba(255,215,0,0.15); }
+    .theme-card.locked { opacity:0.3; filter:grayscale(0.8); }
+    .theme-card.locked.unlockable { opacity:0.6; filter:none; cursor:pointer; border:2px dashed var(--accent-gold); }
+    .theme-card .theme-name { font-size:0.75em; font-weight:700; margin-top:6px; }
+    .theme-card .theme-preview {
+      display:flex; gap:3px; justify-content:center; margin-bottom:4px;
+    }
+    .theme-card .theme-swatch { width:16px; height:16px; border-radius:4px; }
+    .theme-card .theme-lock { position:absolute; top:6px; right:6px; font-size:0.7em; }
+    .theme-card .theme-cost { font-size:0.55em; opacity:0.4; }
+
+    /* === TOURNAMENT === */
+    .tournament-banner {
+      width:100%; padding:8px 14px; border-radius:12px; margin:6px 0;
+      background:linear-gradient(135deg,rgba(168,85,247,0.1),rgba(77,150,255,0.06));
+      border:1px solid rgba(168,85,247,0.15); display:flex; align-items:center; gap:10px;
+      cursor:pointer; transition:all 0.2s;
+    }
+    .tournament-banner:active { transform:scale(0.98); }
+    .tournament-banner .t-icon { font-size:1.5em; }
+    .tournament-banner .t-info { flex:1; }
+    .tournament-banner .t-name { font-size:0.7em; font-weight:800; }
+    .tournament-banner .t-desc { font-size:0.5em; opacity:0.4; }
+    .tournament-banner .t-timer { font-size:0.6em; font-weight:700; color:var(--accent-gold); }
+    .tournament-lb { margin:10px 0; }
+    .tournament-lb .t-row {
+      display:flex; align-items:center; gap:8px; padding:8px 10px;
+      border-bottom:1px solid rgba(255,255,255,0.03); font-size:0.85em;
+    }
+    .tournament-lb .t-row:last-child { border-bottom:none; }
+    .tournament-lb .t-rank { width:24px; text-align:center; font-weight:800; }
+    .tournament-lb .t-name-col { flex:1; font-weight:600; }
+    .tournament-lb .t-score-col { font-weight:900; color:var(--accent-gold); }
+    .tournament-prizes { display:flex; gap:8px; justify-content:center; margin:8px 0; }
+    .tournament-prize {
+      text-align:center; padding:8px; border-radius:10px; background:var(--bg-card);
+      border:1px solid var(--border-subtle); flex:1;
+    }
+    .tournament-prize .tp-icon { font-size:1.4em; }
+    .tournament-prize .tp-name { font-size:0.6em; font-weight:700; margin-top:4px; }
+
+    /* === RATE/REVIEW MODAL === */
+    .rate-stars { display:flex; gap:8px; justify-content:center; margin:16px 0; }
+    .rate-star { font-size:2.5em; cursor:pointer; transition:transform 0.15s; opacity:0.3; }
+    .rate-star:active { transform:scale(0.9); }
+    .rate-star.active { opacity:1; transform:scale(1.1); }
+    .rate-msg { text-align:center; font-size:0.85em; opacity:0.5; margin:8px 0; }
+
+    /* === FRIEND CHALLENGE === */
+    .friend-challenge-card {
+      display:flex; align-items:center; gap:10px; padding:12px;
+      background:var(--bg-card); border-radius:12px; border:1px solid var(--border-subtle); margin:6px 0;
+    }
+    .fc-avatar { font-size:2em; }
+    .fc-info { flex:1; }
+    .fc-name { font-size:0.85em; font-weight:700; }
+    .fc-score { font-size:0.65em; opacity:0.4; }
+    .fc-btn { padding:6px 14px; font-size:0.7em; }
+    .social-actions { display:flex; gap:8px; justify-content:center; margin-top:10px; flex-wrap:wrap; }
+    .social-actions button {
+      padding:8px 16px; font-size:0.75em; font-weight:700; border:1px solid var(--border-subtle);
+      background:var(--bg-card); color:#fff; border-radius:10px; cursor:pointer; font-family:inherit;
+      transition:all 0.2s;
+    }
+    .social-actions button:active { transform:scale(0.93); background:rgba(255,255,255,0.08); }
+    .social-actions button.copied { background:rgba(107,203,119,0.15); border-color:rgba(107,203,119,0.3); }
+
+    /* Analytics insight cards */
+    .insight-card {
+      background:var(--bg-card); border:1px solid var(--border-subtle);
+      border-radius:12px; padding:12px; margin:6px 0; text-align:center;
+    }
+    .insight-card .insight-icon { font-size:1.8em; }
+    .insight-card .insight-text { font-size:0.75em; opacity:0.6; margin-top:4px; line-height:1.5; }
+    .insights-row { display:flex; gap:6px; flex-wrap:wrap; }
+    .insights-row .insight-card { flex:1; min-width:120px; }
+    .trend-badge { display:inline-block; padding:2px 8px; border-radius:6px; font-size:0.6em; font-weight:700; margin-left:4px; }
+    .trend-badge.up { background:rgba(107,203,119,0.1); color:var(--accent-green); }
+    .trend-badge.down { background:rgba(255,107,107,0.1); color:var(--accent-red); }
+    .trend-badge.neutral { background:rgba(255,255,255,0.05); color:var(--text-dim); }
+    .session-summary {
+      display:flex; gap:4px; flex-wrap:wrap; justify-content:center; margin:6px 0;
+    }
+    .session-tag {
+      font-size:0.65em; padding:3px 8px;
+      background:var(--bg-card); border-radius:8px;
+      border:1px solid var(--border-subtle);
+    }
+
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .stat-card {
-      background: rgba(255,255,255,0.06); border-radius: 10px;
-      padding: 10px; text-align: center;
+      background: var(--bg-card); border-radius: 12px; padding: 12px; text-align: center;
+      border: 1px solid var(--border-subtle);
     }
-    .stat-card .stat-value { font-size: 1.4em; font-weight: 800; }
-    .stat-card .stat-label { font-size: 0.6em; opacity: 0.4; text-transform: uppercase; letter-spacing: 1px; }
+    .stat-card .stat-value { font-size: 1.5em; font-weight: 900; }
+    .stat-card .stat-label { font-size: 0.5em; opacity: 0.25; text-transform: uppercase; letter-spacing: 1.5px; }
     .achievements-list { display: flex; flex-direction: column; gap: 6px; }
     .achievement-row {
-      display: flex; align-items: center; gap: 10px;
-      padding: 8px; border-radius: 8px;
-      background: rgba(255,255,255,0.04);
+      display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px; background: var(--bg-card);
     }
-    .achievement-row.locked { opacity: 0.3; filter: grayscale(1); }
-    .achievement-row .ach-icon { font-size: 1.4em; }
+    .achievement-row.locked { opacity: 0.15; filter: grayscale(1); }
+    .achievement-row .ach-icon { font-size: 1.5em; }
     .achievement-row .ach-name { font-size: 0.8em; font-weight: 700; }
-    .achievement-row .ach-desc { font-size: 0.6em; opacity: 0.5; }
-
-    /* === UNDO & ACTION BUTTONS === */
-    .action-btn {
-      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-      color: #fff; font-size: 0.65em; font-weight: 700; padding: 4px 10px;
-      border-radius: 8px; cursor: pointer; transition: all 0.2s;
-    }
-    .action-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.12); }
-
-    /* === LEADERBOARD MODAL === */
-    #leaderboard-modal.show { display: flex; }
-    .lb-row {
-      display: flex; align-items: center; gap: 8px;
-      padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05);
-      font-size: 0.9em;
-    }
+    .achievement-row .ach-desc { font-size: 0.6em; opacity: 0.35; }
+    .lb-row { display: flex; align-items: center; gap: 8px; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.9em; }
     .lb-row:last-child { border-bottom: none; }
     .lb-name { flex: 1; font-weight: 600; }
-    .lb-score { font-weight: 800; color: #ffd93d; font-variant-numeric: tabular-nums; }
+    .lb-score { font-weight: 900; color: var(--accent-gold); font-variant-numeric: tabular-nums; }
 
-    /* === TUTORIAL OVERLAY === */
-    #tutorial-overlay.show { display: flex; animation: fadeIn 0.4s ease-out; }
+    #combo-fire {
+      position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+      font-size: 0; transition: font-size 0.3s ease-out;
+      pointer-events: none; z-index: 10;
+      filter: drop-shadow(0 0 8px rgba(255,100,0,0.5));
+    }
+    #combo-fire.active { font-size: 1.8em; }
+    #combo-fire.mega { font-size: 2.5em; filter: drop-shadow(0 0 16px rgba(255,50,0,0.8)); }
+
+    /* Seasonal decorations */
+    .seasonal-deco { position:absolute; pointer-events:none; z-index:5; font-size:1.2em; opacity:0.6; }
+
+    ::-webkit-scrollbar { width: 0; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
   </style>
 </head>
 <body>
-  <!-- Splash Screen -->
+  <canvas id="bg-canvas"></canvas>
+  <canvas id="fx-canvas"></canvas>
+
   <div id="splash">
-    <div class="logo">BLOCK SMASH</div>
-    <div class="loader"></div>
+    <div class="splash-blocks" id="splash-blocks"></div>
+    <div class="splash-logo-container">
+      <div class="splash-icon">🧩</div>
+      <div class="splash-title">BLOCK SMASH</div>
+      <div class="splash-subtitle">PUZZLE</div>
+    </div>
+    <div id="splash-seasonal" class="splash-seasonal" style="display:none"></div>
+    <div class="splash-loader"><div class="splash-loader-fill"></div></div>
+    <div class="splash-tap" id="splash-tap">TAP TO PLAY</div>
+    <div class="splash-version">v4.0</div>
   </div>
 
   <div id="game-container">
     <div class="header">
-      <div style="display:flex;align-items:center;gap:8px;">
+      <div style="display:flex;align-items:center;gap:6px;">
         <div class="game-title">BLOCK SMASH</div>
+      </div>
+      <div class="header-right">
+        <div class="score-section">
+          <div class="score-box"><div class="label">Score</div><div class="value" id="score">0</div></div>
+          <div class="score-box"><div class="label">Best</div><div class="value" id="best-score">0</div></div>
+        </div>
         <button class="gear-btn" id="btn-settings" aria-label="Settings">⚙️</button>
       </div>
-      <div class="score-section">
-        <div class="score-box">
-          <div class="label">Score</div>
-          <div class="value" id="score">0</div>
-        </div>
-        <div class="score-box">
-          <div class="label">Best</div>
-          <div class="value" id="best-score">0</div>
-        </div>
-      </div>
     </div>
-
-    <!-- Level & XP Bar (Endowed Progress) -->
     <div id="level-bar-container">
       <div class="level-info">
         <span id="level-badge">⭐ Lv.1</span>
         <span id="level-title" class="level-title-text">Rookie</span>
         <span id="streak-badge" class="streak-badge" style="display:none">🔥 0</span>
       </div>
-      <div class="xp-bar-bg">
-        <div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div>
-      </div>
+      <div class="xp-bar-bg"><div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div></div>
       <div class="xp-label"><span id="xp-text">0 / 200 XP</span></div>
     </div>
-
-    <!-- Daily Challenge Banner (Goal Gradient) -->
     <div id="daily-challenge" class="daily-challenge">
       <div class="daily-left">
         <span class="daily-icon" id="daily-icon">⚡</span>
@@ -463,46 +888,57 @@
           <div class="daily-desc" id="daily-desc">Clear 5 lines</div>
         </div>
       </div>
-      <div class="daily-progress-ring" id="daily-ring">
-        <span id="daily-progress-text">0/5</span>
-      </div>
+      <div class="daily-progress-ring" id="daily-ring"><span id="daily-progress-text">0/5</span></div>
     </div>
-
+    <!-- Power-ups Bar -->
+    <div id="powerup-bar">
+      <button class="powerup-btn disabled" id="pu-bomb" data-pu="bomb" title="Bomb: Destroy 3×3 area">
+        <span class="pu-icon">💣</span><span>Bomb</span><span class="pu-count" id="pu-bomb-count">0</span>
+      </button>
+      <button class="powerup-btn disabled" id="pu-colorBomb" data-pu="colorBomb" title="Color Bomb: Remove all blocks of one color">
+        <span class="pu-icon">🌈</span><span>Color</span><span class="pu-count" id="pu-colorBomb-count">0</span>
+      </button>
+      <button class="powerup-btn disabled" id="pu-rowClear" data-pu="rowClear" title="Row Clear: Clear any row">
+        <span class="pu-icon">➡️</span><span>Row</span><span class="pu-count" id="pu-rowClear-count">0</span>
+      </button>
+      <button class="powerup-btn disabled" id="pu-colClear" data-pu="colClear" title="Column Clear: Clear any column">
+        <span class="pu-icon">⬇️</span><span>Col</span><span class="pu-count" id="pu-colClear-count">0</span>
+      </button>
+    </div>
+    <!-- Tournament Quick Access -->
+    <div id="tournament-quick-bar" class="tournament-banner" style="display:none" aria-label="Weekly Tournament">
+      <div class="t-icon">🏟️</div>
+      <div class="t-info">
+        <div class="t-name" id="tq-name">Weekly Tournament</div>
+        <div class="t-desc" id="tq-desc">Compete for prizes!</div>
+      </div>
+      <div class="t-timer" id="tq-timer">--</div>
+    </div>
     <div id="board-container">
-      <div style="display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:4px;">
+      <div class="board-toolbar">
         <button class="action-btn" id="btn-undo" style="opacity:0.3;pointer-events:none;" aria-label="Undo">↩ Undo</button>
-        <span id="fill-percent" style="font-size:0.65em;opacity:0.3;font-weight:700;">0%</span>
+        <span id="fill-percent" style="font-size:0.55em;opacity:0.15;font-weight:700;font-variant-numeric:tabular-nums;">0%</span>
         <button class="action-btn" id="btn-how-to-play" aria-label="How to play">❓ How</button>
       </div>
       <div id="board"></div>
+      <div id="combo-fire"></div>
     </div>
-
     <div id="pieces-container"></div>
-
-    <div class="ad-banner-slot" id="ad-banner" style="display:none;">
-      <!-- AdMob banner loads here via Capacitor plugin on native -->
-    </div>
+    <div class="ad-banner-slot" id="ad-banner" style="display:none;"></div>
   </div>
 
   <div id="drag-ghost"></div>
 
-  <!-- Game Over Overlay -->
+  <!-- GAME OVER -->
   <div id="game-over">
     <h2>GAME OVER</h2>
     <div class="final-score" id="final-score">0</div>
     <div class="new-record" id="new-record" style="display:none">🏆 NEW RECORD!</div>
     <div class="best-label">Best Score</div>
     <div class="best-score" id="final-best">0</div>
-
-    <!-- Post-game XP gain animation -->
-    <div id="xp-gain" class="xp-gain" style="display:none">
-      <span id="xp-gain-text">+120 XP</span>
-    </div>
-
-    <!-- Near-miss / Motivational nudge -->
+    <div id="xp-gain" class="xp-gain" style="display:none"><span id="xp-gain-text">+120 XP</span></div>
+    <div id="session-insights" style="display:none"></div>
     <div id="motivational-nudge" class="motivational-nudge" style="display:none"></div>
-
-    <!-- Milestone unlocked toast -->
     <div id="milestone-unlock" class="milestone-unlock" style="display:none">
       <div class="milestone-icon" id="milestone-icon">⭐</div>
       <div class="milestone-text">
@@ -510,7 +946,6 @@
         <div id="milestone-name">First Clear</div>
       </div>
     </div>
-
     <div class="btn-row">
       <button class="btn btn-primary" id="btn-restart">▶ Play Again</button>
       <button class="btn btn-share" id="btn-share">Share 🔗</button>
@@ -519,38 +954,49 @@
       <button class="btn btn-secondary" id="btn-leaderboard">🏅 Leaderboard</button>
       <button class="btn btn-secondary" id="btn-stats">📊 Stats</button>
     </div>
+    <div class="btn-row" style="margin-top:4px;">
+      <button class="btn btn-secondary" id="btn-challenge-friend">🤝 Challenge</button>
+      <button class="btn btn-exit" id="btn-exit-game">✕ Exit</button>
+    </div>
   </div>
 
-  <!-- Settings Modal -->
-  <div id="settings-modal">
-    <div class="settings-panel">
+  <!-- SETTINGS MODAL -->
+  <div id="settings-modal" class="modal-overlay">
+    <div class="modal-panel">
       <h3>⚙️ Settings</h3>
-      <div class="setting-row">
-        <span>Sound</span>
-        <div class="toggle on" id="toggle-sound"></div>
+      <div class="setting-row"><span>Sound Effects</span><div class="toggle on" id="toggle-sound"></div></div>
+      <div class="setting-row"><span>Haptic Feedback</span><div class="toggle on" id="toggle-vibration"></div></div>
+      <div class="setting-row"><span>Ambient Music</span><div class="toggle" id="toggle-music"></div></div>
+      <h3 style="margin-top:14px;">♿ Accessibility</h3>
+      <div class="setting-row"><span>High Contrast</span><div class="toggle" id="toggle-high-contrast"></div></div>
+      <div class="setting-row"><span>Colorblind Mode</span>
+        <select id="select-colorblind" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:8px;padding:4px 8px;font-size:0.85em;">
+          <option value="none">None</option>
+          <option value="deuteranopia">Deuteranopia</option>
+          <option value="protanopia">Protanopia</option>
+          <option value="tritanopia">Tritanopia</option>
+        </select>
       </div>
-      <div class="setting-row">
-        <span>Vibration</span>
-        <div class="toggle on" id="toggle-vibration"></div>
-      </div>
-      <div class="setting-row">
-        <span>Music</span>
-        <div class="toggle" id="toggle-music"></div>
-      </div>
-      <div style="margin-top:16px;text-align:center;">
+      <div class="setting-row"><span>Block Patterns</span><div class="toggle" id="toggle-patterns"></div></div>
+      <div class="setting-row"><span>Larger Text</span><div class="toggle" id="toggle-large-text"></div></div>
+      <div style="margin-top:18px;text-align:center;">
         <button class="btn btn-primary" id="btn-close-settings" style="padding:10px 28px;">Done</button>
       </div>
-      <div style="margin-top:16px;text-align:center;opacity:0.3;font-size:0.7em;">
-        <a href="/privacy" style="color:#fff;">Privacy Policy</a> · v2.0.0
+      <div style="margin-top:12px;text-align:center;">
+        <button class="btn btn-exit" id="btn-exit-settings" style="padding:8px 24px;font-size:0.85em;">✕ Exit Game</button>
+      </div>
+      <div style="margin-top:18px;text-align:center;opacity:0.15;font-size:0.6em;">
+        <a href="/privacy" style="color:#fff;">Privacy Policy</a> · v4.0
       </div>
     </div>
   </div>
 
-  <!-- Stats & Achievements Modal -->
-  <div id="stats-modal">
-    <div class="settings-panel" style="max-width:360px;max-height:80vh;overflow-y:auto;">
+  <!-- STATS MODAL -->
+  <div id="stats-modal" class="modal-overlay">
+    <div class="modal-panel">
       <h3>📊 Your Stats</h3>
       <div class="stats-grid" id="stats-grid"></div>
+      <div id="analytics-insights" style="margin-top:12px;"></div>
       <h3 style="margin-top:16px;">🏆 Achievements</h3>
       <div id="achievements-list" class="achievements-list"></div>
       <div style="margin-top:16px;text-align:center;">
@@ -559,19 +1005,14 @@
     </div>
   </div>
 
-  <!-- Level Up Overlay -->
-  <div id="level-up-overlay">
-    <div class="level-up-content">
-      <div class="level-up-icon">🎉</div>
-      <div class="level-up-text" id="level-up-text">LEVEL 2!</div>
-      <div class="level-up-title" id="level-up-title">Beginner</div>
-    </div>
-  </div>
-
-  <!-- Leaderboard Modal -->
-  <div id="leaderboard-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(10px);">
-    <div class="settings-panel" style="max-width:360px;max-height:80vh;overflow-y:auto;">
+  <!-- LEADERBOARD MODAL -->
+  <div id="leaderboard-modal" class="modal-overlay">
+    <div class="modal-panel">
       <h3>🏅 Leaderboard</h3>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <button class="action-btn" id="lb-tab-all" style="flex:1;padding:6px;text-align:center;">All Time</button>
+        <button class="action-btn" id="lb-tab-weekly" style="flex:1;padding:6px;text-align:center;">Weekly</button>
+      </div>
       <div id="leaderboard-list" style="margin:12px 0;"></div>
       <div style="text-align:center;">
         <button class="btn btn-primary" id="btn-close-leaderboard" style="padding:10px 28px;">Done</button>
@@ -579,25 +1020,128 @@
     </div>
   </div>
 
-  <!-- Tutorial Overlay -->
-  <div id="tutorial-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:350;align-items:center;justify-content:center;backdrop-filter:blur(12px);">
-    <div class="settings-panel" style="max-width:340px;text-align:center;">
-      <h3 style="margin-bottom:12px;">🧩 How to Play</h3>
-      <div style="text-align:left;font-size:0.85em;line-height:1.8;opacity:0.85;">
-        <div style="margin-bottom:8px;">👆 <strong>Drag & drop</strong> blocks onto the 8×8 board</div>
-        <div style="margin-bottom:8px;">📏 <strong>Fill complete rows or columns</strong> to clear them and score points</div>
-        <div style="margin-bottom:8px;">🔥 <strong>Chain clears</strong> for combos — the more in a row, the higher the multiplier!</div>
-        <div style="margin-bottom:8px;">↩ <strong>Undo</strong> your last move if you make a mistake</div>
-        <div style="margin-bottom:8px;">🎯 <strong>Complete daily challenges</strong> for bonus XP</div>
-        <div style="margin-bottom:8px;">💀 <strong>Game ends</strong> when no pieces can fit on the board</div>
+  <!-- THEMES STORE -->
+  <div id="themes-modal" class="modal-overlay">
+    <div class="modal-panel">
+      <h3>🎨 Themes & Skins</h3>
+      <div style="text-align:center;margin-bottom:8px;">
+        <span style="font-size:0.7em;opacity:0.4;">Unlock themes with XP! Current: </span>
+        <span id="themes-xp-display" style="font-size:0.75em;font-weight:800;color:var(--accent-gold);">0 XP</span>
       </div>
-      <div style="margin-top:4px;padding:10px;background:rgba(255,215,0,0.1);border-radius:10px;font-size:0.75em;opacity:0.7;">
-        💡 <strong>Pro tip:</strong> Keep the center clear and build from edges!
-      </div>
-      <div style="margin-top:16px;">
-        <button class="btn btn-primary" id="btn-tutorial-close" style="padding:12px 36px;font-size:1.05em;">Got it! Let's Play 🎮</button>
+      <div id="theme-grid" class="theme-grid"></div>
+      <div style="margin-top:16px;text-align:center;">
+        <button class="btn btn-primary" id="btn-close-themes" style="padding:10px 28px;">Done</button>
       </div>
     </div>
+  </div>
+
+  <!-- TOURNAMENT MODAL -->
+  <div id="tournament-modal" class="modal-overlay">
+    <div class="modal-panel">
+      <h3>🏟️ Weekly Tournament</h3>
+      <div id="tournament-info"></div>
+      <div id="tournament-leaderboard" class="tournament-lb"></div>
+      <div id="tournament-prizes" class="tournament-prizes"></div>
+      <div style="margin-top:16px;text-align:center;">
+        <button class="btn btn-primary" id="btn-close-tournament" style="padding:10px 28px;">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RATE/REVIEW MODAL -->
+  <div id="rate-modal" class="modal-overlay">
+    <div class="modal-panel" style="text-align:center;">
+      <h3>⭐ Enjoying Block Smash?</h3>
+      <p class="rate-msg">If you like the game, please leave a rating! It helps a lot.</p>
+      <div class="rate-stars" id="rate-stars">
+        <span class="rate-star" data-star="1">⭐</span>
+        <span class="rate-star" data-star="2">⭐</span>
+        <span class="rate-star" data-star="3">⭐</span>
+        <span class="rate-star" data-star="4">⭐</span>
+        <span class="rate-star" data-star="5">⭐</span>
+      </div>
+      <div id="rate-feedback" style="display:none;margin:8px 0;">
+        <textarea id="rate-feedback-text" rows="2" placeholder="Tell us how we can improve..."
+          style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:10px;padding:10px;font-size:0.85em;resize:none;font-family:inherit;"></textarea>
+      </div>
+      <div class="btn-row" style="margin-top:12px;">
+        <button class="btn btn-primary" id="btn-rate-submit" style="padding:10px 28px;">Submit</button>
+        <button class="btn btn-secondary" id="btn-rate-later" style="padding:10px 28px;">Later</button>
+      </div>
+      <div style="margin-top:8px;">
+        <button id="btn-rate-never" style="background:none;border:none;color:rgba(255,255,255,0.2);cursor:pointer;font-size:0.7em;">Don't ask again</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FRIEND CHALLENGE MODAL -->
+  <div id="challenge-modal" class="modal-overlay">
+    <div class="modal-panel" style="text-align:center;">
+      <h3>🤝 Challenge a Friend</h3>
+      <p style="font-size:0.8em;opacity:0.4;margin-bottom:12px;">Share your score and dare them to beat it!</p>
+      <div id="challenge-card" class="friend-challenge-card" style="justify-content:center;">
+        <div class="fc-avatar">🧩</div>
+        <div class="fc-info" style="text-align:left;">
+          <div class="fc-name">Your Score</div>
+          <div class="fc-score" id="challenge-score">0 pts</div>
+        </div>
+      </div>
+      <div class="social-actions" id="social-share-actions">
+        <button id="btn-share-twitter" onclick="shareToTwitter()">🐦 Twitter</button>
+        <button id="btn-share-whatsapp" onclick="shareToWhatsApp()">💬 WhatsApp</button>
+        <button id="btn-copy-challenge" onclick="copyChallenge()">📋 Copy Link</button>
+      </div>
+      <div class="btn-row" style="margin-top:14px;">
+        <button class="btn btn-share" id="btn-send-challenge">Send Challenge 🔗</button>
+      </div>
+      <div id="challenge-history" style="margin-top:14px;text-align:left;"></div>
+      <div class="btn-row" style="margin-top:8px;">
+        <button class="btn btn-secondary" id="btn-close-challenge" style="padding:10px 28px;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEVEL UP OVERLAY -->
+  <div id="level-up-overlay">
+    <div class="level-up-content">
+      <div class="level-up-icon">🎉</div>
+      <div class="level-up-text" id="level-up-text">LEVEL 2!</div>
+      <div class="level-up-title" id="level-up-title">Beginner</div>
+      <div class="level-up-rewards" id="level-up-rewards"></div>
+    </div>
+  </div>
+
+  <!-- TUTORIAL OVERLAY -->
+  <div id="tutorial-overlay" class="modal-overlay">
+    <div class="modal-panel" style="text-align:center;">
+      <h3 style="margin-bottom:14px;">🧩 How to Play</h3>
+      <div style="text-align:left;font-size:0.88em;line-height:2;opacity:0.85;">
+        <div>👆 <strong>Drag & drop</strong> blocks onto the board</div>
+        <div>📏 <strong>Fill complete rows or columns</strong> to clear them</div>
+        <div>🔥 <strong>Chain clears</strong> for combo multipliers!</div>
+        <div>✨ <strong>Clear entire board</strong> for Perfect Clear bonus!</div>
+        <div>💣 <strong>Power-ups</strong> — earn through combos & milestones</div>
+        <div>🎨 <strong>Themes</strong> — unlock by earning XP</div>
+        <div>🏟️ <strong>Tournaments</strong> — compete weekly for prizes</div>
+        <div>↩ <strong>Undo</strong> your last move</div>
+        <div>🎯 <strong>Daily challenges</strong> give bonus XP</div>
+        <div>💀 <strong>Game ends</strong> when no pieces fit</div>
+      </div>
+      <div style="margin-top:8px;padding:12px;background:rgba(255,215,0,0.05);border-radius:12px;font-size:0.78em;opacity:0.45;">
+        💡 <strong>Pro tip:</strong> Keep the center clear and build from edges!
+      </div>
+      <div style="margin-top:18px;">
+        <button class="btn btn-primary" id="btn-tutorial-close" style="padding:14px 44px;font-size:1.1em;">Let's Play 🎮</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEASONAL EVENT BANNER (shown in-game) -->
+  <div id="seasonal-event-banner" style="display:none;position:fixed;top:calc(var(--safe-top) + 8px);left:50%;transform:translateX(-50%);z-index:90;
+    background:linear-gradient(135deg,rgba(255,215,0,0.12),rgba(255,107,107,0.06));border:1px solid rgba(255,215,0,0.2);
+    border-radius:14px;padding:6px 16px;font-size:0.7em;font-weight:700;pointer-events:auto;cursor:pointer;
+    animation:fadeInUp 0.5s ease-out;white-space:nowrap;backdrop-filter:blur(8px);">
+    <span id="seasonal-event-text"></span>
   </div>
 
   <script src="/game.js"></script>

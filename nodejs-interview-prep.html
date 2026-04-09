@@ -1,0 +1,2696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node.js Interview Prep — Amex | 4 Years Experience</title>
+    <style>
+        :root {
+            --primary: #006FCF;
+            --primary-dark: #00175A;
+            --accent: #00A4E4;
+            --success: #00C853;
+            --warning: #FF9800;
+            --danger: #F44336;
+            --bg: #F5F7FA;
+            --card-bg: #FFFFFF;
+            --text: #1A1A2E;
+            --text-light: #6B7280;
+            --border: #E5E7EB;
+            --code-bg: #1E1E2E;
+            --code-text: #CDD6F4;
+            --tag-beginner: #4CAF50;
+            --tag-intermediate: #FF9800;
+            --tag-advanced: #F44336;
+            --tag-coding: #9C27B0;
+            --tag-amex: #006FCF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        /* ===== HEADER ===== */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--accent) 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .hero h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            position: relative;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .hero .subtitle {
+            font-size: 1.3em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .hero .meta {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        .hero .meta span {
+            background: rgba(255,255,255,0.15);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            backdrop-filter: blur(10px);
+        }
+
+        /* ===== NAV / TOC ===== */
+        .toc-container {
+            position: sticky;
+            top: 0;
+            background: white;
+            border-bottom: 2px solid var(--border);
+            padding: 12px 20px;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .toc-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-bottom: 4px;
+            scrollbar-width: thin;
+        }
+
+        .toc-scroll::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .toc-scroll::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        .toc-btn {
+            white-space: nowrap;
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: white;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .toc-btn:hover, .toc-btn:focus {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        /* ===== PROGRESS BAR ===== */
+        .progress-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+        }
+
+        .progress-container h3 {
+            margin-bottom: 12px;
+            font-size: 1em;
+            color: var(--text-light);
+        }
+
+        .progress-bar {
+            background: #E8E8E8;
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        .progress-text {
+            text-align: right;
+            font-size: 0.85em;
+            color: var(--text-light);
+            margin-top: 6px;
+        }
+
+        /* ===== SECTION ===== */
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .section-icon {
+            font-size: 1.6em;
+        }
+
+        .section-header h2 {
+            font-size: 1.5em;
+            color: var(--primary-dark);
+        }
+
+        .section-header .badge {
+            background: var(--primary);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+
+        /* ===== QUESTION CARD ===== */
+        .qa-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            transition: box-shadow 0.3s;
+        }
+
+        .qa-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+
+        .qa-question {
+            padding: 16px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .qa-question:hover {
+            background: #F8FAFC;
+        }
+
+        .qa-number {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: 700;
+        }
+
+        .qa-title {
+            flex: 1;
+            font-weight: 600;
+            font-size: 1em;
+            color: var(--text);
+        }
+
+        .qa-tags {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .tag {
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tag-beginner { background: #E8F5E9; color: var(--tag-beginner); }
+        .tag-intermediate { background: #FFF3E0; color: var(--tag-intermediate); }
+        .tag-advanced { background: #FFEBEE; color: var(--tag-advanced); }
+        .tag-coding { background: #F3E5F5; color: var(--tag-coding); }
+        .tag-amex { background: #E3F2FD; color: var(--tag-amex); }
+        .tag-must { background: #FCE4EC; color: #C62828; border: 1px solid #EF9A9A; }
+
+        .qa-toggle {
+            font-size: 1.2em;
+            transition: transform 0.3s;
+            color: var(--text-light);
+            flex-shrink: 0;
+        }
+
+        .qa-card.open .qa-toggle {
+            transform: rotate(180deg);
+        }
+
+        .qa-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .qa-card.open .qa-answer {
+            max-height: 5000px;
+        }
+
+        .qa-answer-inner {
+            padding: 0 20px 20px 64px;
+            color: #374151;
+            font-size: 0.95em;
+        }
+
+        .qa-answer-inner p {
+            margin-bottom: 12px;
+        }
+
+        .qa-answer-inner ul, .qa-answer-inner ol {
+            margin: 8px 0 16px 20px;
+        }
+
+        .qa-answer-inner li {
+            margin-bottom: 6px;
+        }
+
+        .qa-answer-inner strong {
+            color: var(--primary-dark);
+        }
+
+        .qa-answer-inner em {
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        /* ===== CODE BLOCKS ===== */
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 16px 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 12px 0;
+            font-size: 0.88em;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        pre .lang-label {
+            position: absolute;
+            top: 6px;
+            right: 10px;
+            font-size: 0.7em;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        code {
+            font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', Consolas, monospace;
+        }
+
+        .inline-code {
+            background: #EEF2FF;
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.88em;
+            font-family: 'Fira Code', Consolas, monospace;
+        }
+
+        /* ===== COMPARISON TABLE ===== */
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 0.9em;
+        }
+
+        .compare-table th {
+            background: var(--primary);
+            color: white;
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .compare-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .compare-table tr:nth-child(even) td {
+            background: #F8FAFC;
+        }
+
+        /* ===== CALLOUT BOXES ===== */
+        .callout {
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin: 14px 0;
+            border-left: 4px solid;
+            font-size: 0.9em;
+        }
+
+        .callout-tip {
+            background: #E8F5E9;
+            border-color: var(--success);
+        }
+
+        .callout-warn {
+            background: #FFF8E1;
+            border-color: var(--warning);
+        }
+
+        .callout-danger {
+            background: #FFEBEE;
+            border-color: var(--danger);
+        }
+
+        .callout-info {
+            background: #E3F2FD;
+            border-color: var(--primary);
+        }
+
+        .callout-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        /* ===== DIAGRAM ===== */
+        .diagram {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 14px 0;
+            text-align: center;
+            font-family: monospace;
+            font-size: 0.85em;
+            line-height: 1.4;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        /* ===== CHEAT SHEET ===== */
+        .cheatsheet {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 14px;
+            margin: 16px 0;
+        }
+
+        .cheatsheet-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 20px;
+            border-radius: 10px;
+        }
+
+        .cheatsheet-card h4 {
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.85;
+            margin-bottom: 6px;
+        }
+
+        .cheatsheet-card p {
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        /* ===== FILTER BUTTONS ===== */
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 6px 14px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+            font-size: 0.85em;
+            border-top: 1px solid var(--border);
+            margin-top: 60px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 1.8em; }
+            .hero .subtitle { font-size: 1em; }
+            .qa-answer-inner { padding-left: 20px; }
+            .qa-tags { display: none; }
+            .section-header h2 { font-size: 1.2em; }
+        }
+
+        /* ===== PRINT ===== */
+        @media print {
+            .toc-container, .filter-bar, .progress-container { display: none; }
+            .qa-answer { max-height: none !important; }
+            .qa-card { break-inside: avoid; }
+            .hero { padding: 20px; }
+        }
+
+        /* ===== DARK MODE TOGGLE ===== */
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.3em;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transition: transform 0.3s;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        /* Scroll to top */
+        .scroll-top {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--primary-dark);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.3em;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .scroll-top.visible {
+            opacity: 1;
+        }
+
+        .scroll-top:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== HERO ===== -->
+<header class="hero">
+    <h1>🚀 Node.js Interview Preparation</h1>
+    <p class="subtitle">Comprehensive Guide for American Express — 4 Years Experience</p>
+    <div class="meta">
+        <span>📋 80+ Questions</span>
+        <span>💻 12 Coding Problems</span>
+        <span>🏦 BFSI/Amex Focus</span>
+        <span>⏱️ Updated April 2026</span>
+    </div>
+</header>
+
+<!-- ===== TABLE OF CONTENTS ===== -->
+<nav class="toc-container">
+    <div class="toc-scroll">
+        <a href="#core" class="toc-btn">🧠 Core Concepts</a>
+        <a href="#eventloop" class="toc-btn">🔄 Event Loop</a>
+        <a href="#async" class="toc-btn">⚡ Async Patterns</a>
+        <a href="#express" class="toc-btn">🛤️ Express.js</a>
+        <a href="#security" class="toc-btn">🔒 Security</a>
+        <a href="#performance" class="toc-btn">📈 Performance</a>
+        <a href="#streams" class="toc-btn">🌊 Streams & Buffers</a>
+        <a href="#design" class="toc-btn">🏗️ Architecture</a>
+        <a href="#testing" class="toc-btn">🧪 Testing</a>
+        <a href="#amex" class="toc-btn">🏦 Amex-Specific</a>
+        <a href="#coding" class="toc-btn">💻 Coding Problems</a>
+        <a href="#tricky" class="toc-btn">🎯 Tricky Output</a>
+        <a href="#cheatsheet" class="toc-btn">📝 Cheat Sheet</a>
+    </div>
+</nav>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="container">
+
+    <!-- Progress Tracker -->
+    <div class="progress-container">
+        <h3>📊 Your Preparation Progress</h3>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">0 / 0 reviewed</div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- SECTION 1: CORE NODE.JS CONCEPTS -->
+    <!-- ========================================= -->
+    <section class="section" id="core">
+        <div class="section-header">
+            <span class="section-icon">🧠</span>
+            <h2>Core Node.js Concepts</h2>
+            <span class="badge">Must Know</span>
+        </div>
+
+        <div class="qa-card" data-category="core">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">1</span>
+                <span class="qa-title">What is Node.js and how does it work?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-must">Must Know</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <p>Node.js is an <strong>open-source, cross-platform JavaScript runtime</strong> built on Chrome's <strong>V8 engine</strong>. It uses an event-driven, non-blocking I/O model that makes it lightweight and efficient for building scalable network applications.</p>
+                    <p><strong>How it works:</strong></p>
+                    <ul>
+                        <li><strong>V8 Engine</strong> — Compiles JavaScript into machine code (written in C++)</li>
+                        <li><strong>Event Loop</strong> — Single-threaded loop that handles async operations</li>
+                        <li><strong>libuv</strong> — C library providing thread pool for heavy I/O (file system, DNS, crypto)</li>
+                        <li><strong>Non-blocking I/O</strong> — Operations are delegated and handled via callbacks/promises when complete</li>
+                    </ul>
+                    <div class="callout callout-tip">
+                        <div class="callout-title">💡 Interview Tip</div>
+                        Mention that Node.js is NOT a framework or language — it's a runtime environment.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="core">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">2</span>
+                <span class="qa-title">Why is Node.js single-threaded? How does it handle concurrency?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-must">Must Know</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <p>Node.js uses a <strong>single main thread</strong> for JavaScript execution to keep things lightweight and avoid the overhead of thread context switching. However it achieves concurrency through:</p>
+                    <ul>
+                        <li><strong>Event Loop</strong> — Processes callbacks and events asynchronously</li>
+                        <li><strong>libuv Thread Pool</strong> — Handles heavy I/O in background (default 4 threads, configurable via <span class="inline-code">UV_THREADPOOL_SIZE</span>)</li>
+                        <li><strong>Worker Threads</strong> — For CPU-intensive tasks within the same process</li>
+                        <li><strong>Cluster Module</strong> — Spawns multiple processes across CPU cores</li>
+                    </ul>
+<pre><code><span class="lang-label">JS</span>const crypto = require("crypto");
+const start = Date.now();
+
+function logHashTime() {
+  crypto.pbkdf2("a", "b", 100000, 512, "sha512", () => {
+    console.log("Hash:", Date.now() - start, "ms");
+  });
+}
+
+// All 4 run concurrently via the thread pool!
+logHashTime(); // Hash: ~1200ms
+logHashTime(); // Hash: ~1210ms
+logHashTime(); // Hash: ~1205ms
+logHashTime(); // Hash: ~1215ms</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="core">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">3</span>
+                <span class="qa-title">What is libuv? What role does it play?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-intermediate">Intermediate</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <p><strong>libuv</strong> is a multi-platform C library that provides:</p>
+                    <ul>
+                        <li><strong>Event Loop</strong> implementation</li>
+                        <li><strong>Thread Pool</strong> (4 threads by default) for file system, DNS, crypto</li>
+                        <li><strong>Async I/O</strong> — networking (TCP/UDP/DNS), file operations</li>
+                        <li><strong>Signal handling</strong>, child processes, timers</li>
+                    </ul>
+                    <p>It's the bridge between Node.js JavaScript code and the operating system.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="core">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">4</span>
+                <span class="qa-title">What is the difference between <code>require()</code> (CommonJS) and <code>import</code> (ESM)?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-intermediate">Intermediate</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <table class="compare-table">
+                        <tr><th>Feature</th><th>require (CommonJS)</th><th>import (ESM)</th></tr>
+                        <tr><td>Loading</td><td>Synchronous</td><td>Asynchronous</td></tr>
+                        <tr><td>Timing</td><td>Runtime</td><td>Parse time (static)</td></tr>
+                        <tr><td>Tree Shaking</td><td>❌ Not possible</td><td>✅ Supported</td></tr>
+                        <tr><td>Top-level await</td><td>❌</td><td>✅ Supported</td></tr>
+                        <tr><td>File extension</td><td>.js (default)</td><td>.mjs or "type":"module" in package.json</td></tr>
+                        <tr><td>Conditional</td><td>✅ Can require inside if/else</td><td>❌ Must be top-level (use dynamic <code>import()</code>)</td></tr>
+                    </table>
+<pre><code><span class="lang-label">JS</span>// CommonJS
+const fs = require('fs');
+const { readFile } = require('fs');
+
+// ESM
+import fs from 'node:fs';
+import { readFile } from 'node:fs/promises';
+
+// Best Practice: Use 'node:' protocol for built-in modules
+import { createServer } from 'node:http';</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="core">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">5</span>
+                <span class="qa-title">What are Global Objects in Node.js?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-beginner">Beginner</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <p>Unlike browsers (which have <code>window</code>), Node.js has these global objects:</p>
+                    <ul>
+                        <li><span class="inline-code">global</span> — The global namespace (like <code>window</code> in browsers)</li>
+                        <li><span class="inline-code">process</span> — Info about the current process (env, pid, exit, argv)</li>
+                        <li><span class="inline-code">console</span> — Logging</li>
+                        <li><span class="inline-code">Buffer</span> — Binary data handling</li>
+                        <li><span class="inline-code">__dirname</span> / <span class="inline-code">__filename</span> — Current directory/file path (CJS only)</li>
+                        <li><span class="inline-code">setTimeout</span>, <span class="inline-code">setInterval</span>, <span class="inline-code">setImmediate</span></li>
+                        <li><span class="inline-code">module</span>, <span class="inline-code">exports</span>, <span class="inline-code">require</span> (CJS only)</li>
+                    </ul>
+                    <div class="callout callout-warn">
+                        <div class="callout-title">⚠️ Note</div>
+                        In ESM, <code>__dirname</code> and <code>__filename</code> are NOT available. Use:<br>
+                        <code>import.meta.url</code> and <code>import { dirname } from 'node:path'</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="core">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">6</span>
+                <span class="qa-title">What is the <code>process</code> object? Key properties and methods?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-intermediate">Intermediate</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <p>The <span class="inline-code">process</span> object provides information and control over the current Node.js process:</p>
+<pre><code><span class="lang-label">JS</span>process.env          // Environment variables
+process.argv         // Command-line arguments
+process.pid          // Process ID
+process.cwd()        // Current working directory
+process.exit(0)      // Exit process (0=success, 1=error)
+process.memoryUsage() // Heap and RSS memory info
+
+// Signals
+process.on('SIGTERM', () => { /* graceful shutdown */ });
+process.on('uncaughtException', (err) => { /* last resort */ });
+process.on('unhandledRejection', (reason) => { /* promise errors */ });
+
+// Microtask
+process.nextTick(() => { /* runs before next event loop phase */ });</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================= -->
+    <!-- SECTION 2: EVENT LOOP DEEP DIVE -->
+    <!-- ========================================= -->
+    <section class="section" id="eventloop">
+        <div class="section-header">
+            <span class="section-icon">🔄</span>
+            <h2>Event Loop Deep Dive</h2>
+            <span class="badge">Critical</span>
+        </div>
+
+        <div class="qa-card" data-category="eventloop">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">7</span>
+                <span class="qa-title">Explain the Event Loop phases in detail</span>
+                <div class="qa-tags">
+                    <span class="tag tag-must">Must Know</span>
+                    <span class="tag tag-advanced">Advanced</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+<div class="diagram">
+   ┌───────────────────────────┐
+┌─>│         TIMERS            │ ← setTimeout, setInterval
+│  └───────────┬───────────────┘
+│  ┌───────────┴───────────────┐
+│  │     PENDING CALLBACKS     │ ← I/O callbacks deferred
+│  └───────────┬───────────────┘
+│  ┌───────────┴───────────────┐
+│  │       IDLE / PREPARE      │ ← internal use
+│  └───────────┬───────────────┘
+│  ┌───────────┴───────────────┐
+│  │          POLL             │ ← retrieve new I/O events
+│  └───────────┬───────────────┘
+│  ┌───────────┴───────────────┐
+│  │          CHECK            │ ← setImmediate()
+│  └───────────┬───────────────┘
+│  ┌───────────┴───────────────┐
+│  │      CLOSE CALLBACKS      │ ← socket.on('close')
+│  └───────────┬───────────────┘
+│              │
+└──────────────┘
+
+⚡ Microtask Queues (run BETWEEN each phase):
+  1. process.nextTick() queue  ← highest priority
+  2. Promise .then() queue
+</div>
+                    <p><strong>Key Rules:</strong></p>
+                    <ul>
+                        <li>Microtasks (<code>nextTick</code> + Promises) run between <em>every</em> phase</li>
+                        <li><code>process.nextTick()</code> has higher priority than Promises</li>
+                        <li><code>setImmediate()</code> runs in the check phase</li>
+                        <li>Timers have a minimum delay (even <code>setTimeout(fn, 0)</code> is ~1ms)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="eventloop">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">8</span>
+                <span class="qa-title">Difference between <code>process.nextTick()</code>, <code>setImmediate()</code>, and <code>setTimeout(fn, 0)</code></span>
+                <div class="qa-tags">
+                    <span class="tag tag-must">Must Know</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <table class="compare-table">
+                        <tr><th>Method</th><th>When it runs</th><th>Priority</th></tr>
+                        <tr><td><code>process.nextTick()</code></td><td>After current operation, <strong>before</strong> event loop continues</td><td>🔴 Highest (microtask)</td></tr>
+                        <tr><td><code>Promise.then()</code></td><td>After nextTick, before event loop continues</td><td>🟠 High (microtask)</td></tr>
+                        <tr><td><code>setTimeout(fn, 0)</code></td><td>Timers phase (next iteration)</td><td>🟡 Medium</td></tr>
+                        <tr><td><code>setImmediate()</code></td><td>Check phase (next iteration)</td><td>🟢 After I/O</td></tr>
+                    </table>
+<pre><code><span class="lang-label">JS</span>console.log('1: Start');
+
+setTimeout(() => console.log('2: setTimeout'), 0);
+setImmediate(() => console.log('3: setImmediate'));
+
+Promise.resolve().then(() => console.log('4: Promise'));
+process.nextTick(() => console.log('5: nextTick'));
+
+console.log('6: End');
+
+// Output:
+// 1: Start
+// 6: End
+// 5: nextTick
+// 4: Promise
+// 2: setTimeout  (or 3 — order between setTimeout(0) and
+// 3: setImmediate      setImmediate is non-deterministic outside I/O)</code></pre>
+                    <div class="callout callout-danger">
+                        <div class="callout-title">⚠️ Gotcha</div>
+                        Inside an I/O callback, <code>setImmediate()</code> always fires before <code>setTimeout(fn, 0)</code>.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="eventloop">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">9</span>
+                <span class="qa-title">What causes Event Loop blocking? How do you detect it?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-advanced">Advanced</span>
+                    <span class="tag tag-amex">Amex</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <p><strong>Common causes:</strong></p>
+                    <ul>
+                        <li>Large JSON <code>JSON.parse()</code> / <code>JSON.stringify()</code> on big payloads</li>
+                        <li>Heavy regex (ReDoS — Regular Expression Denial of Service)</li>
+                        <li>Synchronous file operations (<code>fs.readFileSync</code>)</li>
+                        <li>CPU-intensive loops (sorting, crypto without async)</li>
+                        <li>Tight polling / infinite loops</li>
+                    </ul>
+                    <p><strong>Detection:</strong></p>
+                    <ul>
+                        <li>Monitor event loop lag using <span class="inline-code">perf_hooks</span> module</li>
+                        <li>Use <code>clinic.js</code> for flamegraphs and profiling</li>
+                        <li>APM tools (Datadog, New Relic) track event loop delay</li>
+                        <li><code>--prof</code> flag for V8 CPU profiling</li>
+                    </ul>
+<pre><code><span class="lang-label">JS</span>// Measure event loop delay
+const { monitorEventLoopDelay } = require('node:perf_hooks');
+const h = monitorEventLoopDelay({ resolution: 20 });
+h.enable();
+
+setInterval(() => {
+  console.log(`Event Loop Delay — p50: ${h.percentile(50)}ms, p99: ${h.percentile(99)}ms`);
+}, 5000);</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================= -->
+    <!-- SECTION 3: ASYNC PATTERNS & ERROR HANDLING -->
+    <!-- ========================================= -->
+    <section class="section" id="async">
+        <div class="section-header">
+            <span class="section-icon">⚡</span>
+            <h2>Async Patterns & Error Handling</h2>
+            <span class="badge">Must Know</span>
+        </div>
+
+        <div class="qa-card" data-category="async">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">10</span>
+                <span class="qa-title">Explain Callbacks → Promises → async/await evolution</span>
+                <div class="qa-tags">
+                    <span class="tag tag-must">Must Know</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+<pre><code><span class="lang-label">JS</span>// ❌ Callback Hell
+getUser(id, (err, user) => {
+  getOrders(user.id, (err, orders) => {
+    getDetails(orders[0].id, (err, details) => {
+      // pyramid of doom...
+    });
+  });
+});
+
+// ✅ Promises
+getUser(id)
+  .then(user => getOrders(user.id))
+  .then(orders => getDetails(orders[0].id))
+  .then(details => console.log(details))
+  .catch(err => console.error(err));
+
+// ✅✅ Async/Await (PREFERRED)
+async function fetchOrderDetails(id) {
+  try {
+    const user = await getUser(id);
+    const orders = await getOrders(user.id);
+    const details = await getDetails(orders[0].id);
+    return details;
+  } catch (err) {
+    logger.error('Failed to fetch order details', err);
+    throw err; // re-throw for caller
+  }
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="async">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">11</span>
+                <span class="qa-title">What's the difference between <code>Promise.all</code>, <code>Promise.allSettled</code>, <code>Promise.race</code>, and <code>Promise.any</code>?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-must">Must Know</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <table class="compare-table">
+                        <tr><th>Method</th><th>Resolves when</th><th>Rejects when</th><th>Use case</th></tr>
+                        <tr><td><code>Promise.all</code></td><td>ALL resolve</td><td>ANY rejects (fail-fast)</td><td>All results needed</td></tr>
+                        <tr><td><code>Promise.allSettled</code></td><td>ALL settle (resolve or reject)</td><td>Never rejects</td><td>Need all results regardless</td></tr>
+                        <tr><td><code>Promise.race</code></td><td>First to settle (resolve/reject)</td><td>First to reject</td><td>Timeout patterns</td></tr>
+                        <tr><td><code>Promise.any</code></td><td>First to resolve</td><td>ALL reject (AggregateError)</td><td>Fastest success</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="async">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">12</span>
+                <span class="qa-title">How do you handle errors in Node.js? Operational vs Programmer errors?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-must">Must Know</span>
+                    <span class="tag tag-amex">Amex</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <table class="compare-table">
+                        <tr><th>Type</th><th>Examples</th><th>How to handle</th></tr>
+                        <tr><td><strong>Operational</strong></td><td>Network timeout, DB down, invalid input, file not found</td><td>Handle gracefully (try/catch, error middleware, retries)</td></tr>
+                        <tr><td><strong>Programmer</strong></td><td>undefined variable, wrong type, null reference</td><td>Crash & restart (PM2, cluster). Fix the bug.</td></tr>
+                    </table>
+<pre><code><span class="lang-label">JS</span>// Centralized error handling in Express
+class AppError extends Error {
+  constructor(message, statusCode, isOperational = true) {
+    super(message);
+    this.statusCode = statusCode;
+    this.isOperational = isOperational;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+// Global handlers
+process.on('uncaughtException', (err) => {
+  logger.fatal('UNCAUGHT EXCEPTION:', err);
+  process.exit(1); // Must exit — state is unreliable
+});
+
+process.on('unhandledRejection', (reason) => {
+  logger.error('UNHANDLED REJECTION:', reason);
+  // Optionally exit
+});</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="async">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">13</span>
+                <span class="qa-title">What is an EventEmitter? How does it work?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-intermediate">Intermediate</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <p>EventEmitter is a core class implementing the <strong>Observer Pattern</strong>. Objects emit named events that cause registered listeners to be called.</p>
+<pre><code><span class="lang-label">JS</span>const EventEmitter = require('node:events');
+
+class PaymentProcessor extends EventEmitter {
+  processPayment(amount) {
+    // ... process payment logic
+    this.emit('payment:success', { amount, id: 'txn_123' });
+    // or: this.emit('payment:failed', { error: 'Insufficient funds' });
+  }
+}
+
+const processor = new PaymentProcessor();
+
+processor.on('payment:success', (data) => {
+  console.log(`Payment of $${data.amount} successful`);
+  sendReceipt(data.id);
+});
+
+processor.on('payment:failed', (data) => {
+  logger.error('Payment failed:', data.error);
+});
+
+processor.processPayment(100);</code></pre>
+                    <div class="callout callout-warn">
+                        <div class="callout-title">⚠️ Memory Leak Warning</div>
+                        Default max listeners = 10. If you add more, you'll get a warning. Set <code>emitter.setMaxListeners(n)</code> if needed. Always <code>removeListener()</code> when done.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================= -->
+    <!-- SECTION 4: EXPRESS.JS & MIDDLEWARE -->
+    <!-- ========================================= -->
+    <section class="section" id="express">
+        <div class="section-header">
+            <span class="section-icon">🛤️</span>
+            <h2>Express.js & Middleware</h2>
+            <span class="badge">Frequently Asked</span>
+        </div>
+
+        <div class="qa-card" data-category="express">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">14</span>
+                <span class="qa-title">What is middleware in Express? How does <code>next()</code> work?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-must">Must Know</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <p>Middleware is a function that has access to <span class="inline-code">(req, res, next)</span>. It can:</p>
+                    <ul>
+                        <li>Execute any code</li>
+                        <li>Modify request/response objects</li>
+                        <li>End the request-response cycle</li>
+                        <li>Call <code>next()</code> to pass control to the next middleware</li>
+                    </ul>
+<pre><code><span class="lang-label">JS</span>// Custom middleware example
+const requestLogger = (req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    logger.info(`${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms`);
+  });
+  next(); // MUST call next() or send a response!
+};
+
+// Error-handling middleware (4 params — MUST have all 4!)
+const errorHandler = (err, req, res, next) => {
+  logger.error(err.stack);
+  res.status(err.statusCode || 500).json({
+    status: 'error',
+    message: err.isOperational ? err.message : 'Internal Server Error'
+  });
+};
+
+// Order matters!
+app.use(requestLogger);       // 1st: logging
+app.use(express.json());      // 2nd: body parsing
+app.use('/api', authMiddleware); // 3rd: auth (specific routes)
+app.use('/api', router);       // 4th: routes
+app.use(errorHandler);         // LAST: error handler</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="express">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">15</span>
+                <span class="qa-title">How do you structure a production Express app?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-advanced">Advanced</span>
+                    <span class="tag tag-amex">Amex</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <p>Use <strong>3-tier architecture</strong> organized by <strong>feature/domain</strong>:</p>
+<div class="diagram">
+src/
+├── config/              # env, DB, logger config
+│   ├── index.js
+│   └── database.js
+├── middleware/           # auth, validation, error handler
+│   ├── auth.js
+│   ├── validate.js
+│   └── errorHandler.js
+├── modules/             # Feature-based structure
+│   ├── users/
+│   │   ├── user.routes.js      ← thin routes
+│   │   ├── user.controller.js  ← request/response
+│   │   ├── user.service.js     ← business logic
+│   │   ├── user.model.js       ← DB schema
+│   │   └── user.test.js        ← tests
+│   ├── orders/
+│   │   ├── order.routes.js
+│   │   └── ...
+│   └── payments/
+│       └── ...
+├── utils/               # shared helpers
+├── app.js               # Express config (middleware, routes)
+└── server.js            # HTTP server + graceful shutdown
+</div>
+                    <div class="callout callout-tip">
+                        <div class="callout-title">💡 Key Principle</div>
+                        Separate <strong>app.js</strong> (Express config) from <strong>server.js</strong> (HTTP server). This makes testing easier — you can import the app without starting the server.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="express">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">16</span>
+                <span class="qa-title">What's the difference between <code>app.use()</code> and route handlers like <code>app.get()</code>?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-intermediate">Intermediate</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <table class="compare-table">
+                        <tr><th>Feature</th><th><code>app.use()</code></th><th><code>app.get()</code> / <code>app.post()</code></th></tr>
+                        <tr><td>HTTP Method</td><td>ALL methods</td><td>Specific method only</td></tr>
+                        <tr><td>Path matching</td><td>Prefix matching (<code>/api</code> matches <code>/api/users</code>)</td><td>Exact match</td></tr>
+                        <tr><td>Purpose</td><td>Middleware (logging, auth, parsing)</td><td>Route handlers</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="express">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">17</span>
+                <span class="qa-title">"Cannot set headers after they are sent" — What causes this?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-advanced">Advanced</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <p>This error occurs when you try to send <strong>more than one response</strong> for a single request.</p>
+                    <p><strong>Common causes:</strong></p>
+                    <ul>
+                        <li>Calling <code>res.send()</code> / <code>res.json()</code> and then continuing execution without <code>return</code></li>
+                        <li>Calling <code>next()</code> after already sending a response</li>
+                        <li>Multiple async branches resolving and sending responses</li>
+                    </ul>
+<pre><code><span class="lang-label">JS</span>// ❌ BUG — Missing return!
+app.get('/user', (req, res) => {
+  if (!req.user) {
+    res.status(401).json({ error: 'Unauthorized' });
+    // Execution continues! 💥
+  }
+  res.json(req.user); // Second response — CRASH!
+});
+
+// ✅ FIX — Always return after sending a response
+app.get('/user', (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  res.json(req.user);
+});</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================= -->
+    <!-- SECTION 5: SECURITY (CRITICAL FOR AMEX) -->
+    <!-- ========================================= -->
+    <section class="section" id="security">
+        <div class="section-header">
+            <span class="section-icon">🔒</span>
+            <h2>Security</h2>
+            <span class="badge">Critical for BFSI</span>
+        </div>
+
+        <div class="qa-card" data-category="security">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">18</span>
+                <span class="qa-title">How do you secure a Node.js application? (Top 10 practices)</span>
+                <div class="qa-tags">
+                    <span class="tag tag-must">Must Know</span>
+                    <span class="tag tag-amex">Amex</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <ol>
+                        <li><strong>Validate & sanitize inputs</strong> — Use Joi, Zod, or express-validator</li>
+                        <li><strong>Use Helmet</strong> — Sets secure HTTP headers (X-Content-Type, HSTS, CSP)</li>
+                        <li><strong>Rate limiting</strong> — express-rate-limit, Redis-backed for distributed</li>
+                        <li><strong>Parameterized queries</strong> — Prevent SQL/NoSQL injection via ORM/ODM</li>
+                        <li><strong>JWT best practices</strong> — HttpOnly cookies, short expiry, RS256 signing</li>
+                        <li><strong>Dependency audit</strong> — <code>npm audit</code>, Snyk, Dependabot</li>
+                        <li><strong>CORS whitelist</strong> — Only allow known origins</li>
+                        <li><strong>Never expose error details</strong> — Generic messages to client</li>
+                        <li><strong>Run as non-root</strong> — In Docker containers</li>
+                        <li><strong>Environment config</strong> — Secrets in env vars / secret manager, never in code</li>
+                    </ol>
+<pre><code><span class="lang-label">JS</span>const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const cors = require('cors');
+
+// Security middleware stack
+app.use(helmet());
+app.use(cors({ origin: ['https://amex.com', 'https://api.amex.com'] }));
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+app.use(express.json({ limit: '10kb' })); // Limit payload size
+app.disable('x-powered-by'); // Hide Express fingerprint</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="security">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">19</span>
+                <span class="qa-title">How do you handle JWT authentication securely?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-must">Must Know</span>
+                    <span class="tag tag-amex">Amex</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <ul>
+                        <li>Sign with <strong>RS256</strong> (asymmetric) for microservices, HS256 for monolith</li>
+                        <li><strong>Short access token</strong> (15 min) + <strong>refresh token</strong> (7 days)</li>
+                        <li>Store in <strong>HttpOnly, Secure, SameSite=Strict</strong> cookies (NOT localStorage!)</li>
+                        <li>Implement <strong>token revocation</strong> via Redis blacklist</li>
+                        <li>Always validate <code>iss</code>, <code>aud</code>, <code>exp</code> claims</li>
+                    </ul>
+<pre><code><span class="lang-label">JS</span>const jwt = require('jsonwebtoken');
+
+// Generate tokens
+function generateTokens(user) {
+  const accessToken = jwt.sign(
+    { id: user.id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: '15m', issuer: 'amex-api' }
+  );
+  const refreshToken = jwt.sign(
+    { id: user.id },
+    process.env.REFRESH_SECRET,
+    { expiresIn: '7d' }
+  );
+  return { accessToken, refreshToken };
+}
+
+// Auth middleware
+function authenticate(req, res, next) {
+  const token = req.cookies.accessToken; // HttpOnly cookie
+  if (!token) return res.status(401).json({ error: 'No token' });
+
+  try {
+    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    next();
+  } catch (err) {
+    return res.status(403).json({ error: 'Invalid token' });
+  }
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="security">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">20</span>
+                <span class="qa-title">What is CORS and how do you configure it properly?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-intermediate">Intermediate</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <p><strong>CORS (Cross-Origin Resource Sharing)</strong> controls which domains can access your API. Browsers enforce this for security.</p>
+<pre><code><span class="lang-label">JS</span>const cors = require('cors');
+
+// ❌ Never do this in production
+app.use(cors()); // Allows ALL origins
+
+// ✅ Whitelist specific origins
+const allowedOrigins = ['https://app.amex.com', 'https://admin.amex.com'];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // Allow cookies
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="security">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">21</span>
+                <span class="qa-title">How do you prevent SQL/NoSQL injection?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-amex">Amex</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <ul>
+                        <li>Use <strong>parameterized queries</strong> (never string concatenation)</li>
+                        <li>Use <strong>ORM/ODM</strong> (Sequelize, Mongoose, Knex) — built-in sanitization</li>
+                        <li><strong>Validate inputs</strong> with Joi/Zod before processing</li>
+                        <li>For MongoDB: avoid <code>$where</code>, sanitize with <code>mongo-sanitize</code></li>
+                    </ul>
+<pre><code><span class="lang-label">JS</span>// ❌ VULNERABLE — NoSQL injection
+const user = await User.findOne({ username: req.body.username });
+// Attacker sends: { "username": { "$gt": "" } } — returns first user!
+
+// ✅ SAFE — Validate with Zod
+const schema = z.object({
+  username: z.string().min(3).max(30).regex(/^[a-zA-Z0-9]+$/),
+  password: z.string().min(8)
+});
+const validated = schema.parse(req.body);
+const user = await User.findOne({ username: validated.username });</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================= -->
+    <!-- SECTION 6: PERFORMANCE & SCALING -->
+    <!-- ========================================= -->
+    <section class="section" id="performance">
+        <div class="section-header">
+            <span class="section-icon">📈</span>
+            <h2>Performance & Scaling</h2>
+            <span class="badge">Senior-Level</span>
+        </div>
+
+        <div class="qa-card" data-category="performance">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">22</span>
+                <span class="qa-title">Cluster vs Worker Threads — when to use which?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-must">Must Know</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <table class="compare-table">
+                        <tr><th>Feature</th><th>Cluster</th><th>Worker Threads</th></tr>
+                        <tr><td><strong>What</strong></td><td>Multiple processes</td><td>Multiple threads in one process</td></tr>
+                        <tr><td><strong>Memory</strong></td><td>Separate (isolated)</td><td>Shared (SharedArrayBuffer)</td></tr>
+                        <tr><td><strong>Use case</strong></td><td>Scale HTTP servers across CPU cores</td><td>CPU-heavy work (image processing, crypto)</td></tr>
+                        <tr><td><strong>Communication</strong></td><td>IPC (slow, serialized)</td><td>MessagePort + SharedMemory (fast)</td></tr>
+                        <tr><td><strong>Crash isolation</strong></td><td>✅ One crashes, others fine</td><td>❌ Thread crash can affect process</td></tr>
+                        <tr><td><strong>When</strong></td><td>Scale request handling</td><td>Offload CPU-bound work</td></tr>
+                    </table>
+<pre><code><span class="lang-label">JS</span>// CLUSTER — Scale HTTP across CPUs
+const cluster = require('node:cluster');
+const os = require('node:os');
+
+if (cluster.isPrimary) {
+  for (let i = 0; i < os.cpus().length; i++) cluster.fork();
+  cluster.on('exit', (worker) => {
+    console.log(`Worker ${worker.process.pid} died. Restarting...`);
+    cluster.fork();
+  });
+} else {
+  require('./app.js'); // Each worker runs Express
+}
+
+// WORKER THREAD — Offload CPU work
+const { Worker } = require('node:worker_threads');
+
+app.post('/process-report', (req, res) => {
+  const worker = new Worker('./heavy-computation.js', {
+    workerData: req.body
+  });
+  worker.on('message', (result) => res.json(result));
+  worker.on('error', (err) => res.status(500).json({ error: err.message }));
+});</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="performance">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">23</span>
+                <span class="qa-title">How do you diagnose memory leaks in production?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-advanced">Advanced</span>
+                    <span class="tag tag-amex">Amex</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <p><strong>Step-by-step approach:</strong></p>
+                    <ol>
+                        <li><strong>Monitor</strong> <code>process.memoryUsage()</code> over time — if heapUsed keeps growing, there's a leak</li>
+                        <li><strong>Take heap snapshots</strong> at intervals using <code>v8.writeHeapSnapshot()</code></li>
+                        <li><strong>Compare snapshots</strong> in Chrome DevTools to find growing retained objects</li>
+                        <li><strong>Common culprits:</strong>
+                            <ul>
+                                <li>Unbounded caches (Maps/arrays that grow forever)</li>
+                                <li>Unremoved event listeners</li>
+                                <li>Closures holding onto large objects</li>
+                                <li>Global variables accumulating data</li>
+                                <li>Unreleased DB connection pool handles</li>
+                            </ul>
+                        </li>
+                        <li><strong>Tools:</strong> <code>clinic.js</code>, <code>0x</code> (flamegraphs), Chrome DevTools (remote debug), APM tools</li>
+                    </ol>
+<pre><code><span class="lang-label">JS</span>// Quick memory monitoring endpoint
+app.get('/health/memory', (req, res) => {
+  const mem = process.memoryUsage();
+  res.json({
+    rss: `${Math.round(mem.rss / 1024 / 1024)}MB`,
+    heapUsed: `${Math.round(mem.heapUsed / 1024 / 1024)}MB`,
+    heapTotal: `${Math.round(mem.heapTotal / 1024 / 1024)}MB`,
+    external: `${Math.round(mem.external / 1024 / 1024)}MB`
+  });
+});</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="performance">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">24</span>
+                <span class="qa-title">How do you implement graceful shutdown?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-must">Must Know</span>
+                    <span class="tag tag-amex">Amex</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+<pre><code><span class="lang-label">JS</span>const server = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+function gracefulShutdown(signal) {
+  console.log(`${signal} received. Starting graceful shutdown...`);
+
+  // 1. Stop accepting new connections
+  server.close(() => {
+    console.log('HTTP server closed');
+
+    // 2. Close DB connections
+    mongoose.connection.close(false, () => {
+      console.log('MongoDB connection closed');
+
+      // 3. Close Redis
+      redisClient.quit(() => {
+        console.log('Redis connection closed');
+        process.exit(0);
+      });
+    });
+  });
+
+  // 4. Force close after timeout
+  setTimeout(() => {
+    console.error('Forced shutdown — timeout exceeded');
+    process.exit(1);
+  }, 30000);
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));</code></pre>
+                    <div class="callout callout-info">
+                        <div class="callout-title">🏦 Why Amex cares</div>
+                        In financial services, dropping requests = dropped transactions = lost money. Graceful shutdown ensures zero-downtime deployments.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="performance">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">25</span>
+                <span class="qa-title">What metrics should you monitor for Node.js services?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-advanced">Advanced</span>
+                    <span class="tag tag-amex">Amex</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <table class="compare-table">
+                        <tr><th>Category</th><th>Metrics</th></tr>
+                        <tr><td>🔄 Runtime</td><td>Event loop delay (p50, p99), GC frequency & duration, heap usage</td></tr>
+                        <tr><td>📡 HTTP</td><td>Request latency (p50, p95, p99), throughput (req/s), error rate (4xx, 5xx)</td></tr>
+                        <tr><td>🗄️ Database</td><td>Query latency, connection pool (active, idle, waiting), slow queries</td></tr>
+                        <tr><td>🧵 Resources</td><td>CPU%, RSS memory, thread pool utilization, open file descriptors</td></tr>
+                        <tr><td>📦 Dependencies</td><td>External API latency, queue depth, circuit breaker state</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================= -->
+    <!-- SECTION 7: STREAMS & BUFFERS -->
+    <!-- ========================================= -->
+    <section class="section" id="streams">
+        <div class="section-header">
+            <span class="section-icon">🌊</span>
+            <h2>Streams & Buffers</h2>
+            <span class="badge">Important</span>
+        </div>
+
+        <div class="qa-card" data-category="streams">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">26</span>
+                <span class="qa-title">What are Streams? What are the 4 types?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-must">Must Know</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <p>Streams process data piece-by-piece without loading everything into memory — critical for large files and real-time data.</p>
+                    <table class="compare-table">
+                        <tr><th>Type</th><th>Description</th><th>Example</th></tr>
+                        <tr><td><strong>Readable</strong></td><td>Read data from source</td><td><code>fs.createReadStream()</code>, HTTP request</td></tr>
+                        <tr><td><strong>Writable</strong></td><td>Write data to destination</td><td><code>fs.createWriteStream()</code>, HTTP response</td></tr>
+                        <tr><td><strong>Duplex</strong></td><td>Both read and write</td><td>TCP socket, WebSocket</td></tr>
+                        <tr><td><strong>Transform</strong></td><td>Modify data in transit</td><td>zlib (compression), crypto cipher</td></tr>
+                    </table>
+<pre><code><span class="lang-label">JS</span>// Stream a large file instead of loading into memory
+const fs = require('node:fs');
+const zlib = require('node:zlib');
+
+// Pipe: Read → Compress → Write
+fs.createReadStream('huge-file.csv')
+  .pipe(zlib.createGzip())
+  .pipe(fs.createWriteStream('huge-file.csv.gz'))
+  .on('finish', () => console.log('Compression complete'));
+
+// Express: Stream file download
+app.get('/download', (req, res) => {
+  res.setHeader('Content-Disposition', 'attachment; filename=report.csv');
+  const stream = fs.createReadStream('/data/report.csv');
+  stream.pipe(res);
+});</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="streams">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">27</span>
+                <span class="qa-title">What is backpressure in streams? What happens if you ignore it?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-advanced">Advanced</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <p><strong>Backpressure</strong> occurs when a writable stream can't consume data as fast as the readable stream produces it.</p>
+                    <p><strong>If ignored:</strong> Data buffers in memory → <strong>memory bloat</strong> → OOM crash</p>
+                    <p><strong>Solution:</strong> <code>.pipe()</code> handles this automatically. When writing manually:</p>
+<pre><code><span class="lang-label">JS</span>const readable = fs.createReadStream('large.csv');
+const writable = fs.createWriteStream('output.csv');
+
+readable.on('data', (chunk) => {
+  const canContinue = writable.write(chunk);
+  if (!canContinue) {
+    readable.pause(); // Stop reading until drain
+  }
+});
+
+writable.on('drain', () => {
+  readable.resume(); // Resume reading
+});</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="streams">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">28</span>
+                <span class="qa-title">What is a Buffer? When do you use it?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-intermediate">Intermediate</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <p>A <strong>Buffer</strong> is a fixed-size chunk of memory allocated outside the V8 heap, used to store raw binary data.</p>
+                    <p><strong>When to use:</strong> Working with binary data — file I/O, network protocols, crypto, image processing.</p>
+<pre><code><span class="lang-label">JS</span>// Create buffers
+const buf1 = Buffer.from('Hello', 'utf-8');
+const buf2 = Buffer.alloc(10); // 10 bytes, zero-filled
+const buf3 = Buffer.allocUnsafe(10); // 10 bytes, NOT zero-filled (faster)
+
+console.log(buf1.toString()); // 'Hello'
+console.log(buf1.length);     // 5 bytes
+console.log(buf1.toJSON());   // { type: 'Buffer', data: [72, 101, ...] }</code></pre>
+                    <div class="callout callout-warn">
+                        <div class="callout-title">⚠️ Security</div>
+                        <code>Buffer.allocUnsafe()</code> may contain old memory data. Use <code>Buffer.alloc()</code> for sensitive operations (Amex/BFSI context!).
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================= -->
+    <!-- SECTION 8: ARCHITECTURE & DESIGN -->
+    <!-- ========================================= -->
+    <section class="section" id="design">
+        <div class="section-header">
+            <span class="section-icon">🏗️</span>
+            <h2>Architecture & Design Patterns</h2>
+            <span class="badge">Senior-Level</span>
+        </div>
+
+        <div class="qa-card" data-category="design">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">29</span>
+                <span class="qa-title">How do you design a scalable Node.js API?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-must">Must Know</span>
+                    <span class="tag tag-amex">Amex</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <ul>
+                        <li>✅ <strong>Stateless</strong> — No in-process sessions (use Redis)</li>
+                        <li>✅ <strong>Load balanced</strong> — Multiple instances behind LB</li>
+                        <li>✅ <strong>Caching</strong> — Redis for hot data, CDN for static</li>
+                        <li>✅ <strong>Rate limiting</strong> — Per user/IP, Redis-backed</li>
+                        <li>✅ <strong>Circuit breakers</strong> — For external dependencies (opossum library)</li>
+                        <li>✅ <strong>Message queues</strong> — Async processing (Bull, RabbitMQ, Kafka)</li>
+                        <li>✅ <strong>DB optimization</strong> — Indexing, connection pooling, read replicas</li>
+                        <li>✅ <strong>Pagination</strong> — Cursor-based for large datasets</li>
+                        <li>✅ <strong>API versioning</strong> — URI-based (/v1/users) for clarity</li>
+                        <li>✅ <strong>Graceful shutdown</strong> — Zero-downtime deployments</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="design">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">30</span>
+                <span class="qa-title">How do you design retries/timeouts to avoid retry storms?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-advanced">Advanced</span>
+                    <span class="tag tag-amex">Amex</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <ul>
+                        <li><strong>Exponential backoff + jitter</strong> — Spread retries to avoid thundering herd</li>
+                        <li><strong>Max retries</strong> — Limit to 3-5 attempts</li>
+                        <li><strong>Circuit breaker</strong> — Stop calling failed dependency</li>
+                        <li><strong>Only retry idempotent operations</strong> — GET, PUT (NOT blind POST)</li>
+                        <li><strong>Strict timeouts</strong> — Fail fast, don't hold connections</li>
+                    </ul>
+<pre><code><span class="lang-label">JS</span>async function retryWithBackoff(fn, maxRetries = 3) {
+  for (let i = 0; i <= maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (i === maxRetries) throw err;
+      const delay = Math.pow(2, i) * 1000 + Math.random() * 1000; // jitter!
+      console.log(`Retry ${i + 1} in ${Math.round(delay)}ms`);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="design">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">31</span>
+                <span class="qa-title">What is the Reactor Pattern?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-intermediate">Intermediate</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <p>Node.js is built on the <strong>Reactor Pattern</strong> — a design pattern for non-blocking I/O:</p>
+                    <ol>
+                        <li>Application submits I/O request to the <strong>Event Demultiplexer</strong></li>
+                        <li>Demultiplexer watches multiple I/O sources simultaneously</li>
+                        <li>When I/O completes, it pushes events to the <strong>Event Queue</strong></li>
+                        <li><strong>Event Loop</strong> processes the queue and invokes registered callbacks</li>
+                    </ol>
+                    <p>This allows a single thread to handle thousands of concurrent connections efficiently.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="design">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">32</span>
+                <span class="qa-title">How do you manage configuration across environments (12-factor)?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-intermediate">Intermediate</span>
+                    <span class="tag tag-amex">Amex</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <p>Follow <strong>12-Factor App</strong> principles:</p>
+                    <ul>
+                        <li>Store config in <strong>environment variables</strong> (not code)</li>
+                        <li>Use <code>dotenv</code> for local dev, secret managers (AWS Secrets, Vault) for production</li>
+                        <li><strong>Validate at startup</strong> — fail fast on missing config</li>
+                        <li>Keep <code>.env.example</code> in repo (without values)</li>
+                    </ul>
+<pre><code><span class="lang-label">JS</span>// config/index.js — validate with Zod/Joi at startup
+const { z } = require('zod');
+
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'staging', 'production']),
+  PORT: z.string().default('3000'),
+  DATABASE_URL: z.string().url(),
+  JWT_SECRET: z.string().min(32),
+  REDIS_URL: z.string().url(),
+});
+
+const config = envSchema.parse(process.env); // Crashes on missing!
+module.exports = config;</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================= -->
+    <!-- SECTION 9: TESTING -->
+    <!-- ========================================= -->
+    <section class="section" id="testing">
+        <div class="section-header">
+            <span class="section-icon">🧪</span>
+            <h2>Testing</h2>
+            <span class="badge">Important</span>
+        </div>
+
+        <div class="qa-card" data-category="testing">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">33</span>
+                <span class="qa-title">Explain the Test Pyramid for Node.js APIs</span>
+                <div class="qa-tags">
+                    <span class="tag tag-must">Must Know</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+<div class="diagram">
+        /‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\
+       /   E2E Tests      \     ← Few, slow, expensive
+      /   (Playwright)     \
+     /─────────────────────\
+    /  Integration Tests    \   ← Medium, test components together
+   / (Supertest + Jest)     \
+  /─────────────────────────\
+ /     Unit Tests            \  ← Many, fast, isolated
+/ (Jest, functions/services)  \
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+</div>
+                    <p><strong>Tools:</strong> Jest (unit + integration), Supertest (HTTP testing), Nock (mock HTTP), Sinon (stubs/mocks), Playwright/Cypress (E2E)</p>
+<pre><code><span class="lang-label">JS</span>// Integration test example with Supertest
+const request = require('supertest');
+const app = require('../app');
+
+describe('POST /api/users', () => {
+  it('should create a user and return 201', async () => {
+    const res = await request(app)
+      .post('/api/users')
+      .send({ name: 'John', email: 'john@amex.com' })
+      .expect(201);
+
+    expect(res.body).toHaveProperty('id');
+    expect(res.body.name).toBe('John');
+  });
+
+  it('should return 400 for invalid input', async () => {
+    await request(app)
+      .post('/api/users')
+      .send({ name: '' })
+      .expect(400);
+  });
+});</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================= -->
+    <!-- SECTION 10: AMEX-SPECIFIC / BFSI -->
+    <!-- ========================================= -->
+    <section class="section" id="amex">
+        <div class="section-header">
+            <span class="section-icon">🏦</span>
+            <h2>Amex / BFSI-Specific Questions</h2>
+            <span class="badge">High Priority</span>
+        </div>
+
+        <div class="qa-card" data-category="amex">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">34</span>
+                <span class="qa-title">How do you implement idempotency for payment APIs?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-must">Must Know</span>
+                    <span class="tag tag-amex">Amex</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <p><strong>Idempotency</strong> ensures repeated requests produce the same result — critical for payment systems.</p>
+<pre><code><span class="lang-label">JS</span>// Idempotency middleware
+async function idempotencyMiddleware(req, res, next) {
+  const key = req.headers['idempotency-key'];
+  if (!key) return res.status(400).json({ error: 'Idempotency-Key required' });
+
+  // Check Redis for existing response
+  const cached = await redis.get(`idempotency:${key}`);
+  if (cached) {
+    const response = JSON.parse(cached);
+    return res.status(response.status).json(response.body);
+  }
+
+  // Capture the response
+  const originalJson = res.json.bind(res);
+  res.json = (body) => {
+    // Cache for 24 hours
+    redis.setex(`idempotency:${key}`, 86400, JSON.stringify({
+      status: res.statusCode,
+      body
+    }));
+    originalJson(body);
+  };
+
+  next();
+}
+
+// Usage
+app.post('/api/payments', idempotencyMiddleware, paymentController.charge);</code></pre>
+                    <div class="callout callout-info">
+                        <div class="callout-title">🏦 Why this matters at Amex</div>
+                        Network failures during payment processing can cause double charges. Idempotency keys prevent duplicate transactions on retries.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="amex">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">35</span>
+                <span class="qa-title">How do you implement distributed tracing / correlation IDs?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-advanced">Advanced</span>
+                    <span class="tag tag-amex">Amex</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+<pre><code><span class="lang-label">JS</span>const { v4: uuid } = require('uuid');
+const { AsyncLocalStorage } = require('node:async_hooks');
+
+const asyncLocalStorage = new AsyncLocalStorage();
+
+// Middleware to set correlation ID
+app.use((req, res, next) => {
+  const correlationId = req.headers['x-correlation-id'] || uuid();
+  res.setHeader('x-correlation-id', correlationId);
+
+  asyncLocalStorage.run({ correlationId }, () => next());
+});
+
+// Logger that auto-includes correlation ID
+function log(message) {
+  const store = asyncLocalStorage.getStore();
+  console.log(JSON.stringify({
+    timestamp: new Date().toISOString(),
+    correlationId: store?.correlationId,
+    message
+  }));
+}
+
+// Propagate to downstream services
+async function callPaymentService(data) {
+  const store = asyncLocalStorage.getStore();
+  return fetch('https://payments.internal/charge', {
+    headers: { 'x-correlation-id': store?.correlationId }
+  });
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="amex">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">36</span>
+                <span class="qa-title">How do you design circuit breakers, bulkheads, and fallbacks?</span>
+                <div class="qa-tags">
+                    <span class="tag tag-advanced">Advanced</span>
+                    <span class="tag tag-amex">Amex</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+                    <table class="compare-table">
+                        <tr><th>Pattern</th><th>Purpose</th><th>Example</th></tr>
+                        <tr><td>🔴 <strong>Circuit Breaker</strong></td><td>Stop calling failed dependency after N errors. Allow recovery after cooldown.</td><td>opossum library</td></tr>
+                        <tr><td>🟡 <strong>Bulkhead</strong></td><td>Isolate resources so one failing component doesn't exhaust the system.</td><td>Separate connection pools per service</td></tr>
+                        <tr><td>🟢 <strong>Fallback</strong></td><td>Return cached data, defaults, or partial responses when dependency is down.</td><td>Return last known balance from cache</td></tr>
+                    </table>
+<pre><code><span class="lang-label">JS</span>const CircuitBreaker = require('opossum');
+
+const options = {
+  timeout: 3000,        // If function takes > 3s, trigger failure
+  errorThresholdPercentage: 50,  // Open circuit if 50% fail
+  resetTimeout: 30000   // Try again after 30s
+};
+
+const breaker = new CircuitBreaker(callExternalPaymentAPI, options);
+
+breaker.fallback(() => ({ status: 'pending', message: 'Service temporarily unavailable' }));
+breaker.on('open', () => logger.warn('Circuit OPEN — payment service down'));
+breaker.on('halfOpen', () => logger.info('Circuit HALF-OPEN — testing...'));
+breaker.on('close', () => logger.info('Circuit CLOSED — recovered'));
+
+app.post('/charge', async (req, res) => {
+  const result = await breaker.fire(req.body);
+  res.json(result);
+});</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================= -->
+    <!-- SECTION 11: CODING PROBLEMS -->
+    <!-- ========================================= -->
+    <section class="section" id="coding">
+        <div class="section-header">
+            <span class="section-icon">💻</span>
+            <h2>Coding Problems</h2>
+            <span class="badge">Practice These!</span>
+        </div>
+
+        <div class="qa-card" data-category="coding">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">C1</span>
+                <span class="qa-title">Implement <code>Promise.all()</code> from scratch</span>
+                <div class="qa-tags">
+                    <span class="tag tag-coding">Coding</span>
+                    <span class="tag tag-must">Must Know</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+<pre><code><span class="lang-label">JS</span>function myPromiseAll(promises) {
+  return new Promise((resolve, reject) => {
+    if (!Array.isArray(promises)) return reject(new TypeError('Not iterable'));
+    if (promises.length === 0) return resolve([]);
+
+    const results = [];
+    let completed = 0;
+
+    promises.forEach((p, index) => {
+      Promise.resolve(p)
+        .then(value => {
+          results[index] = value; // Maintain order!
+          completed++;
+          if (completed === promises.length) resolve(results);
+        })
+        .catch(reject); // Fail-fast on first rejection
+    });
+  });
+}
+
+// Test
+myPromiseAll([
+  Promise.resolve(1),
+  new Promise(res => setTimeout(() => res(2), 100)),
+  Promise.resolve(3)
+]).then(console.log); // [1, 2, 3]</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="coding">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">C2</span>
+                <span class="qa-title">Implement a custom EventEmitter</span>
+                <div class="qa-tags">
+                    <span class="tag tag-coding">Coding</span>
+                    <span class="tag tag-must">Must Know</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+<pre><code><span class="lang-label">JS</span>class EventEmitter {
+  constructor() {
+    this.events = {};
+  }
+
+  on(event, listener) {
+    if (!this.events[event]) this.events[event] = [];
+    this.events[event].push(listener);
+    return this;
+  }
+
+  emit(event, ...args) {
+    if (!this.events[event]) return false;
+    this.events[event].forEach(listener => listener(...args));
+    return true;
+  }
+
+  off(event, listener) {
+    if (!this.events[event]) return this;
+    this.events[event] = this.events[event].filter(l => l !== listener);
+    return this;
+  }
+
+  once(event, listener) {
+    const wrapper = (...args) => {
+      listener(...args);
+      this.off(event, wrapper);
+    };
+    return this.on(event, wrapper);
+  }
+}
+
+// Test
+const emitter = new EventEmitter();
+emitter.on('data', (msg) => console.log('Received:', msg));
+emitter.emit('data', 'Hello!'); // Received: Hello!</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="coding">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">C3</span>
+                <span class="qa-title">Implement retry with exponential backoff + jitter</span>
+                <div class="qa-tags">
+                    <span class="tag tag-coding">Coding</span>
+                    <span class="tag tag-amex">Amex</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+<pre><code><span class="lang-label">JS</span>async function retryWithBackoff(fn, options = {}) {
+  const { maxRetries = 3, baseDelay = 1000, maxDelay = 30000 } = options;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt === maxRetries) throw err;
+
+      const exponential = Math.pow(2, attempt) * baseDelay;
+      const jitter = Math.random() * baseDelay;
+      const delay = Math.min(exponential + jitter, maxDelay);
+
+      console.log(`Attempt ${attempt + 1} failed. Retrying in ${Math.round(delay)}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+}
+
+// Usage
+const data = await retryWithBackoff(() => fetch('https://api.amex.com/rates'), {
+  maxRetries: 3,
+  baseDelay: 1000
+});</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="coding">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">C4</span>
+                <span class="qa-title">Implement a Rate Limiter (sliding window)</span>
+                <div class="qa-tags">
+                    <span class="tag tag-coding">Coding</span>
+                    <span class="tag tag-amex">Amex</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+<pre><code><span class="lang-label">JS</span>class SlidingWindowRateLimiter {
+  constructor(maxRequests, windowMs) {
+    this.maxRequests = maxRequests;
+    this.windowMs = windowMs;
+    this.clients = new Map();
+  }
+
+  isAllowed(clientId) {
+    const now = Date.now();
+    const windowStart = now - this.windowMs;
+
+    if (!this.clients.has(clientId)) {
+      this.clients.set(clientId, []);
+    }
+
+    // Remove expired timestamps
+    const timestamps = this.clients.get(clientId)
+      .filter(ts => ts > windowStart);
+    this.clients.set(clientId, timestamps);
+
+    if (timestamps.length >= this.maxRequests) {
+      return false; // Rate limited!
+    }
+
+    timestamps.push(now);
+    return true;
+  }
+}
+
+// Express middleware
+const limiter = new SlidingWindowRateLimiter(100, 60 * 1000); // 100 req/min
+
+app.use((req, res, next) => {
+  const clientId = req.ip;
+  if (!limiter.isAllowed(clientId)) {
+    return res.status(429).json({ error: 'Too many requests' });
+  }
+  next();
+});</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="coding">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">C5</span>
+                <span class="qa-title">Implement parallel execution with concurrency limit</span>
+                <div class="qa-tags">
+                    <span class="tag tag-coding">Coding</span>
+                    <span class="tag tag-advanced">Advanced</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+<pre><code><span class="lang-label">JS</span>async function parallelLimit(tasks, concurrency) {
+  const results = [];
+  let index = 0;
+
+  async function runNext() {
+    while (index < tasks.length) {
+      const currentIndex = index++;
+      results[currentIndex] = await tasks[currentIndex]();
+    }
+  }
+
+  // Create `concurrency` number of workers
+  const workers = Array(Math.min(concurrency, tasks.length))
+    .fill(null)
+    .map(() => runNext());
+
+  await Promise.all(workers);
+  return results;
+}
+
+// Usage: Process 100 API calls, 5 at a time
+const tasks = urls.map(url => () => fetch(url).then(r => r.json()));
+const results = await parallelLimit(tasks, 5);</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="coding">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">C6</span>
+                <span class="qa-title">Implement a debounce function</span>
+                <div class="qa-tags">
+                    <span class="tag tag-coding">Coding</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+<pre><code><span class="lang-label">JS</span>function debounce(fn, delay) {
+  let timer;
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+// Throttle (for comparison — also commonly asked)
+function throttle(fn, limit) {
+  let inThrottle = false;
+  return function (...args) {
+    if (!inThrottle) {
+      fn.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  };
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="coding">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">C7</span>
+                <span class="qa-title">Implement <code>promisify</code> — convert callback to promise</span>
+                <div class="qa-tags">
+                    <span class="tag tag-coding">Coding</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+<pre><code><span class="lang-label">JS</span>function promisify(fn) {
+  return function (...args) {
+    return new Promise((resolve, reject) => {
+      fn(...args, (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    });
+  };
+}
+
+// Usage
+const fs = require('fs');
+const readFileAsync = promisify(fs.readFile);
+
+const data = await readFileAsync('file.txt', 'utf-8');
+
+// Note: Node.js has built-in util.promisify()
+const { promisify } = require('util');
+const readFile = promisify(fs.readFile);</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================= -->
+    <!-- SECTION 12: TRICKY OUTPUT QUESTIONS -->
+    <!-- ========================================= -->
+    <section class="section" id="tricky">
+        <div class="section-header">
+            <span class="section-icon">🎯</span>
+            <h2>Tricky Output-Based Questions</h2>
+            <span class="badge">Expect These!</span>
+        </div>
+
+        <div class="qa-card" data-category="tricky">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">T1</span>
+                <span class="qa-title">What is the output? (Event Loop ordering)</span>
+                <div class="qa-tags">
+                    <span class="tag tag-must">Must Know</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+<pre><code><span class="lang-label">JS</span>console.log('1');
+
+setTimeout(() => console.log('2'), 0);
+
+Promise.resolve().then(() => console.log('3'));
+
+process.nextTick(() => console.log('4'));
+
+setImmediate(() => console.log('5'));
+
+console.log('6');</code></pre>
+                    <p><strong>Output:</strong></p>
+<pre><code>1
+6
+4     ← nextTick (microtask, highest priority)
+3     ← Promise (microtask)
+2     ← setTimeout (timers phase)
+5     ← setImmediate (check phase)</code></pre>
+                    <p><strong>Explanation:</strong> Synchronous code runs first (1, 6). Then microtasks: nextTick before Promises. Then macrotasks: setTimeout before setImmediate (outside I/O context, order can vary).</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="tricky">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">T2</span>
+                <span class="qa-title">What is the output? (async/await)</span>
+                <div class="qa-tags">
+                    <span class="tag tag-intermediate">Intermediate</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+<pre><code><span class="lang-label">JS</span>async function foo() {
+  console.log('A');
+  await Promise.resolve();
+  console.log('B');
+}
+
+console.log('C');
+foo();
+console.log('D');</code></pre>
+                    <p><strong>Output:</strong></p>
+<pre><code>C
+A     ← foo() starts synchronously
+D     ← execution continues after foo() hits await
+B     ← resumes after await (microtask)</code></pre>
+                    <p><strong>Key insight:</strong> <code>await</code> pauses the function and yields control. Code after <code>await</code> runs as a microtask.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="tricky">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">T3</span>
+                <span class="qa-title">What is the output? (setTimeout inside setImmediate inside I/O)</span>
+                <div class="qa-tags">
+                    <span class="tag tag-advanced">Advanced</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+<pre><code><span class="lang-label">JS</span>const fs = require('fs');
+
+fs.readFile(__filename, () => {
+  setTimeout(() => console.log('timeout'), 0);
+  setImmediate(() => console.log('immediate'));
+});</code></pre>
+                    <p><strong>Output (always):</strong></p>
+<pre><code>immediate
+timeout</code></pre>
+                    <p><strong>Why?</strong> Inside an I/O callback, the check phase (setImmediate) <strong>always</strong> runs before the timers phase (setTimeout). This is deterministic, unlike outside I/O.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="tricky">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">T4</span>
+                <span class="qa-title">What is the output? (Closure + setTimeout)</span>
+                <div class="qa-tags">
+                    <span class="tag tag-intermediate">Intermediate</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+<pre><code><span class="lang-label">JS</span>for (var i = 0; i < 3; i++) {
+  setTimeout(() => console.log(i), 100);
+}
+// Output: 3, 3, 3  (var is function-scoped!)
+
+// FIX 1: Use let (block-scoped)
+for (let i = 0; i < 3; i++) {
+  setTimeout(() => console.log(i), 100);
+}
+// Output: 0, 1, 2
+
+// FIX 2: IIFE (old-school)
+for (var i = 0; i < 3; i++) {
+  (function(j) {
+    setTimeout(() => console.log(j), 100);
+  })(i);
+}
+// Output: 0, 1, 2</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="qa-card" data-category="tricky">
+            <div class="qa-question" onclick="toggleCard(this)">
+                <span class="qa-number">T5</span>
+                <span class="qa-title">What is the output? (Promise chaining)</span>
+                <div class="qa-tags">
+                    <span class="tag tag-intermediate">Intermediate</span>
+                </div>
+                <span class="qa-toggle">▼</span>
+            </div>
+            <div class="qa-answer">
+                <div class="qa-answer-inner">
+<pre><code><span class="lang-label">JS</span>Promise.resolve(1)
+  .then(x => x + 1)       // 2
+  .then(x => { throw new Error('Oops') })
+  .then(x => console.log(x))   // SKIPPED
+  .catch(err => console.log(err.message)) // 'Oops'
+  .then(x => console.log('After catch:', x)); // 'After catch: undefined'</code></pre>
+                    <p><strong>Output:</strong></p>
+<pre><code>Oops
+After catch: undefined</code></pre>
+                    <p><strong>Key:</strong> <code>.catch()</code> itself returns a resolved promise, so <code>.then()</code> after it still runs. Since catch doesn't return a value, x is <code>undefined</code>.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================= -->
+    <!-- SECTION 13: CHEAT SHEET -->
+    <!-- ========================================= -->
+    <section class="section" id="cheatsheet">
+        <div class="section-header">
+            <span class="section-icon">📝</span>
+            <h2>Quick Reference Cheat Sheet</h2>
+        </div>
+
+        <div class="cheatsheet">
+            <div class="cheatsheet-card">
+                <h4>Event Loop Priority</h4>
+                <p>1. Sync code<br>2. process.nextTick()<br>3. Promise.then()<br>4. setTimeout(0)<br>5. setImmediate()</p>
+            </div>
+            <div class="cheatsheet-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <h4>require vs import</h4>
+                <p>require = CommonJS (sync, runtime)<br>import = ESM (async, static, tree-shakeable)</p>
+            </div>
+            <div class="cheatsheet-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <h4>Buffer</h4>
+                <p>Raw binary data, outside V8 heap.<br>alloc() = safe, allocUnsafe() = fast.<br>Use alloc() for security!</p>
+            </div>
+            <div class="cheatsheet-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: #333;">
+                <h4>cluster vs worker_threads</h4>
+                <p>cluster = multi-process (HTTP scale)<br>worker_threads = multi-thread (CPU work)</p>
+            </div>
+            <div class="cheatsheet-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: #333;">
+                <h4>npm ci vs npm install</h4>
+                <p>npm ci = clean install from lockfile (production, CI)<br>npm install = resolves from package.json</p>
+            </div>
+            <div class="cheatsheet-card" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color: #333;">
+                <h4>NODE_ENV=production</h4>
+                <p>Enables Express view caching<br>Reduces verbose error output<br>Optimizes perf in many libs</p>
+            </div>
+            <div class="cheatsheet-card" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #333;">
+                <h4>Streams Types</h4>
+                <p>Readable → Writable → Duplex → Transform<br>.pipe() handles backpressure automatically</p>
+            </div>
+            <div class="cheatsheet-card" style="background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);">
+                <h4>Error Handling</h4>
+                <p>Operational → Handle gracefully<br>Programmer → Crash & restart<br>Always: process.on('unhandledRejection')</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================= -->
+    <!-- INTERVIEW DAY TIPS -->
+    <!-- ========================================= -->
+    <section class="section" id="tips">
+        <div class="section-header">
+            <span class="section-icon">💡</span>
+            <h2>Interview Day Tips</h2>
+        </div>
+
+        <div class="callout callout-tip" style="font-size: 1em;">
+            <div class="callout-title" style="font-size: 1.1em;">✅ Do's</div>
+            <ul>
+                <li>Explain trade-offs, not just answers ("Cluster is better for HTTP scaling, but worker threads are better for CPU work because...")</li>
+                <li>Mention real-world tools (PM2, Redis, Datadog, Bull, opossum)</li>
+                <li>Talk about production concerns (monitoring, logging, graceful shutdown)</li>
+                <li>Relate answers to BFSI context when possible (security, idempotency, compliance)</li>
+                <li>For coding: Talk through your approach before writing code</li>
+            </ul>
+        </div>
+
+        <div class="callout callout-danger" style="font-size: 1em;">
+            <div class="callout-title" style="font-size: 1.1em;">❌ Don'ts</div>
+            <ul>
+                <li>Don't say "Node.js is a framework" (it's a runtime!)</li>
+                <li>Don't say "Node.js is multi-threaded" (single-threaded JS, multi-threaded I/O via libuv)</li>
+                <li>Don't confuse <code>process.nextTick()</code> with <code>setImmediate()</code></li>
+                <li>Don't use <code>var</code> in coding questions (use <code>const</code>/<code>let</code>)</li>
+                <li>Don't forget error handling in async code examples</li>
+            </ul>
+        </div>
+    </section>
+
+</main>
+
+<!-- Floating Buttons -->
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">⬆</button>
+
+<footer>
+    <p>📚 <strong>Node.js Interview Prep for Amex</strong> — Built with ❤️ for your preparation</p>
+    <p>Sources: InterviewBit, Simplilearn, GeeksforGeeks, Node.js Best Practices (Yoni Goldberg), Node.js Official Docs</p>
+    <p>Last updated: April 2026 | Good luck! 🚀</p>
+</footer>
+
+<script>
+    // ===== Toggle QA Cards =====
+    function toggleCard(questionEl) {
+        const card = questionEl.closest('.qa-card');
+        card.classList.toggle('open');
+        updateProgress();
+    }
+
+    // ===== Expand All / Collapse All =====
+    function expandAll() {
+        document.querySelectorAll('.qa-card').forEach(c => c.classList.add('open'));
+        updateProgress();
+    }
+
+    function collapseAll() {
+        document.querySelectorAll('.qa-card').forEach(c => c.classList.remove('open'));
+        updateProgress();
+    }
+
+    // ===== Progress Tracker =====
+    function updateProgress() {
+        const total = document.querySelectorAll('.qa-card').length;
+        const opened = document.querySelectorAll('.qa-card.open').length;
+        const pct = Math.round((opened / total) * 100);
+        document.getElementById('progressFill').style.width = pct + '%';
+        document.getElementById('progressText').textContent = `${opened} / ${total} reviewed (${pct}%)`;
+    }
+
+    // ===== Scroll to Top Button =====
+    window.addEventListener('scroll', () => {
+        const btn = document.getElementById('scrollTop');
+        if (window.scrollY > 400) {
+            btn.classList.add('visible');
+        } else {
+            btn.classList.remove('visible');
+        }
+    });
+
+    // ===== Smooth scroll for TOC =====
+    document.querySelectorAll('.toc-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const target = document.querySelector(btn.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    // ===== Keyboard shortcuts =====
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'e' && e.altKey) expandAll();
+        if (e.key === 'c' && e.altKey) collapseAll();
+    });
+
+    // Initialize
+    updateProgress();
+</script>
+
+</body>
+</html>

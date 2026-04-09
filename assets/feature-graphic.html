@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1024px; height: 500px; overflow: hidden;
+    background: linear-gradient(135deg, #0a0a2e 0%, #1a1a5e 40%, #0d0d3d 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    color: #fff; position: relative;
+  }
+  .content {
+    text-align: center; z-index: 2; position: relative;
+  }
+  .title {
+    font-size: 72px; font-weight: 900; letter-spacing: -2px;
+    background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #a855f7);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: 12px;
+    text-shadow: none;
+  }
+  .subtitle {
+    font-size: 28px; font-weight: 600; opacity: 0.7;
+    letter-spacing: 2px;
+  }
+  .tags {
+    margin-top: 20px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  }
+  .tag {
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+    padding: 6px 16px; border-radius: 20px; font-size: 16px; font-weight: 600;
+  }
+  /* Floating blocks decoration */
+  .block { position: absolute; border-radius: 8px; opacity: 0.15; }
+  .b1 { width: 80px; height: 80px; background: #ff6b6b; top: 40px; left: 60px; transform: rotate(15deg); }
+  .b2 { width: 60px; height: 120px; background: #ffd93d; top: 80px; right: 80px; transform: rotate(-10deg); }
+  .b3 { width: 120px; height: 40px; background: #6bcb77; bottom: 60px; left: 120px; transform: rotate(5deg); }
+  .b4 { width: 80px; height: 80px; background: #4d96ff; bottom: 40px; right: 140px; transform: rotate(20deg); }
+  .b5 { width: 40px; height: 40px; background: #a855f7; top: 60px; left: 300px; transform: rotate(-25deg); }
+  .b6 { width: 100px; height: 60px; background: #f97316; bottom: 100px; right: 300px; transform: rotate(12deg); }
+  .b7 { width: 40px; height: 120px; background: #06b6d4; top: 150px; left: 50px; transform: rotate(-8deg); }
+  .b8 { width: 60px; height: 60px; background: #ec4899; top: 30px; right: 300px; transform: rotate(30deg); }
+
+  .emoji-row {
+    margin-top: 16px; font-size: 36px; letter-spacing: 8px;
+  }
+</style>
+</head>
+<body>
+  <div class="block b1"></div>
+  <div class="block b2"></div>
+  <div class="block b3"></div>
+  <div class="block b4"></div>
+  <div class="block b5"></div>
+  <div class="block b6"></div>
+  <div class="block b7"></div>
+  <div class="block b8"></div>
+
+  <div class="content">
+    <div class="title">BLOCK SMASH</div>
+    <div class="subtitle">PUZZLE</div>
+    <div class="tags">
+      <span class="tag">🧩 100 Levels</span>
+      <span class="tag">🔥 Combos</span>
+      <span class="tag">🎯 Daily Challenges</span>
+      <span class="tag">🏆 Achievements</span>
+    </div>
+    <div class="emoji-row">🧩🔥⭐💎👑</div>
+  </div>
+</body>
+</html>
