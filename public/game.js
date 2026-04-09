@@ -1291,26 +1291,30 @@
 
   function initBgCanvas() {
     // Render BG at reduced resolution to save GPU tile memory on Android
-    // Tablets get lower scale since the orbs are just blurry ambient effects
+    // High-DPI devices get slightly better scale for richer visuals
     const w = window.innerWidth;
-    const scale = w > 1200 ? 0.2 : w > 768 ? 0.3 : 0.35;
+    const dpr = window.devicePixelRatio || 1;
+    const highDPI = dpr >= 2;
+    const scale = w > 1200 ? (highDPI ? 0.25 : 0.2) : w > 768 ? (highDPI ? 0.35 : 0.3) : (highDPI ? 0.4 : 0.35);
     bgW = bgCanvas.width = Math.round(w * scale);
     bgH = bgCanvas.height = Math.round(window.innerHeight * scale);
     bgCanvas.style.width = '100%';
     bgCanvas.style.height = '100%';
     bgOrbs.length = 0;
     // Warm, inviting orbs: deep blues, warm purples, soft teals — premium puzzle game feel
-    const warmHues = [220, 240, 260, 280, 190, 210];
-    const orbCount = Math.min(5, Math.max(3, Math.floor(bgW * bgH / 50000)));
+    const warmHues = [220, 240, 260, 280, 190, 210, 300, 170];
+    const orbCount = Math.min(highDPI ? 7 : 5, Math.max(3, Math.floor(bgW * bgH / 40000)));
     for (let i = 0; i < orbCount; i++) {
       bgOrbs.push({
         x: Math.random() * bgW, y: Math.random() * bgH,
-        r: 60 + Math.random() * 120,
-        vx: (Math.random() - 0.5) * 0.15, vy: (Math.random() - 0.5) * 0.1,
-        hue: warmHues[i % warmHues.length] + (Math.random() - 0.5) * 20,
-        alpha: 0.03 + Math.random() * 0.03,
-        saturation: 50 + Math.random() * 25,
-        lightness: 30 + Math.random() * 20,
+        r: 50 + Math.random() * 140,
+        vx: (Math.random() - 0.5) * 0.18, vy: (Math.random() - 0.5) * 0.12,
+        hue: warmHues[i % warmHues.length] + (Math.random() - 0.5) * 25,
+        alpha: 0.025 + Math.random() * 0.04,
+        saturation: 45 + Math.random() * 30,
+        lightness: 25 + Math.random() * 25,
+        pulsePhase: Math.random() * Math.PI * 2,
+        pulseSpeed: 0.003 + Math.random() * 0.004,
       });
     }
   }
@@ -1319,35 +1323,59 @@
     // Deep warm base gradient instead of pure black clear
     const baseGrad = bgCtx.createLinearGradient(0, 0, bgW * 0.3, bgH);
     baseGrad.addColorStop(0, '#0d1025');   // deep navy
-    baseGrad.addColorStop(0.5, '#0a0e20'); // midnight blue
+    baseGrad.addColorStop(0.35, '#0a0e20'); // midnight blue
+    baseGrad.addColorStop(0.65, '#0e0a20'); // subtle purple mid
     baseGrad.addColorStop(1, '#0f0a1e');   // warm purple-black
     bgCtx.fillStyle = baseGrad;
     bgCtx.fillRect(0, 0, bgW, bgH);
 
-    // Subtle center glow for depth
-    const centerGlow = bgCtx.createRadialGradient(bgW * 0.5, bgH * 0.35, 0, bgW * 0.5, bgH * 0.35, bgW * 0.8);
-    centerGlow.addColorStop(0, 'rgba(30, 40, 80, 0.15)');
-    centerGlow.addColorStop(0.5, 'rgba(20, 25, 60, 0.08)');
+    // Subtle center glow for depth — larger and warmer
+    const centerGlow = bgCtx.createRadialGradient(bgW * 0.5, bgH * 0.3, 0, bgW * 0.5, bgH * 0.35, bgW * 0.9);
+    centerGlow.addColorStop(0, 'rgba(35, 45, 90, 0.18)');
+    centerGlow.addColorStop(0.3, 'rgba(25, 30, 70, 0.1)');
+    centerGlow.addColorStop(0.7, 'rgba(20, 15, 50, 0.05)');
     centerGlow.addColorStop(1, 'transparent');
     bgCtx.fillStyle = centerGlow;
     bgCtx.fillRect(0, 0, bgW, bgH);
 
+    // Subtle bottom-edge warm glow
+    const bottomGlow = bgCtx.createRadialGradient(bgW * 0.5, bgH * 1.1, 0, bgW * 0.5, bgH * 1.1, bgW * 0.7);
+    bottomGlow.addColorStop(0, 'rgba(60, 30, 80, 0.08)');
+    bottomGlow.addColorStop(1, 'transparent');
+    bgCtx.fillStyle = bottomGlow;
+    bgCtx.fillRect(0, 0, bgW, bgH);
+
+    const now = performance.now();
     for (const orb of bgOrbs) {
       orb.x += orb.vx; orb.y += orb.vy;
       if (orb.x < -orb.r) orb.x = bgW + orb.r;
       if (orb.x > bgW + orb.r) orb.x = -orb.r;
       if (orb.y < -orb.r) orb.y = bgH + orb.r;
       if (orb.y > bgH + orb.r) orb.y = -orb.r;
-      orb.hue = (orb.hue + 0.02) % 360;
+      orb.hue = (orb.hue + 0.015) % 360;
+      // Pulsing alpha for living, breathing feel
+      const pulse = 1 + Math.sin(now * orb.pulseSpeed + orb.pulsePhase) * 0.3;
+      const a = orb.alpha * pulse;
       const grad = bgCtx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.r);
       const s = orb.saturation || 70;
       const l = orb.lightness || 45;
-      grad.addColorStop(0, 'hsla(' + orb.hue + ',' + s + '%,' + l + '%,' + orb.alpha + ')');
-      grad.addColorStop(0.6, 'hsla(' + orb.hue + ',' + (s - 10) + '%,' + (l - 10) + '%,' + (orb.alpha * 0.4) + ')');
+      grad.addColorStop(0, 'hsla(' + orb.hue + ',' + s + '%,' + l + '%,' + a + ')');
+      grad.addColorStop(0.4, 'hsla(' + orb.hue + ',' + (s - 5) + '%,' + (l - 5) + '%,' + (a * 0.6) + ')');
+      grad.addColorStop(0.7, 'hsla(' + orb.hue + ',' + (s - 15) + '%,' + (l - 15) + '%,' + (a * 0.2) + ')');
       grad.addColorStop(1, 'transparent');
       bgCtx.fillStyle = grad;
       bgCtx.fillRect(orb.x - orb.r, orb.y - orb.r, orb.r * 2, orb.r * 2);
     }
+
+    // Very subtle noise/grain texture for premium feel (cheap to render)
+    if (Math.random() > 0.85) {
+      bgCtx.fillStyle = 'rgba(255,255,255,0.003)';
+      for (let i = 0; i < 3; i++) {
+        const nx = Math.random() * bgW, ny = Math.random() * bgH;
+        bgCtx.fillRect(nx, ny, 1, 1);
+      }
+    }
+
     bgAnimId = requestAnimationFrame(renderBg);
   }
 
@@ -1358,10 +1386,18 @@
   let fxW, fxH;
   const particles = [];
   let fxAnimRunning = false;
+  const isHighDPI = window.devicePixelRatio >= 2;
 
   function initFxCanvas() {
-    fxW = fxCanvas.width = window.innerWidth;
-    fxH = fxCanvas.height = window.innerHeight;
+    // Keep FX canvas at CSS pixel resolution (no DPR scaling)
+    // Particles look great at 1x and this avoids tile memory issues on high-DPI devices
+    fxW = window.innerWidth;
+    fxH = window.innerHeight;
+    fxCanvas.width = fxW;
+    fxCanvas.height = fxH;
+    fxCanvas.style.width = fxW + 'px';
+    fxCanvas.style.height = fxH + 'px';
+    fxCtx.setTransform(1, 0, 0, 1, 0, 0);
   }
 
   class Particle {
@@ -1376,36 +1412,88 @@
       this.life = 1;
       this.decay = opts.decay ?? (0.015 + Math.random() * 0.02);
       this.type = opts.type || 'circle';
+      this.glow = opts.glow ?? false;
+      this.trail = opts.trail ?? false;
+      this.prevX = x; this.prevY = y;
+      this.rotation = Math.random() * Math.PI * 2;
+      this.rotSpeed = (Math.random() - 0.5) * 0.15;
     }
     update() {
+      this.prevX = this.x; this.prevY = this.y;
       this.vx *= this.friction; this.vy *= this.friction;
       this.vy += this.gravity;
       this.x += this.vx; this.y += this.vy;
+      this.rotation += this.rotSpeed;
       this.life -= this.decay;
       return this.life > 0;
     }
     draw(ctx) {
-      ctx.globalAlpha = this.life;
+      const alpha = Math.max(0, this.life);
+      ctx.globalAlpha = alpha;
       ctx.fillStyle = this.color;
+
+      // Draw trail
+      if (this.trail && alpha > 0.2) {
+        ctx.globalAlpha = alpha * 0.3;
+        ctx.beginPath();
+        ctx.moveTo(this.prevX, this.prevY);
+        ctx.lineTo(this.x, this.y);
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = this.size * alpha * 0.6;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+        ctx.globalAlpha = alpha;
+      }
+
+      // Glow effect
+      if (this.glow && alpha > 0.15) {
+        ctx.globalAlpha = alpha * 0.25;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * alpha * 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = alpha;
+      }
+
       if (this.type === 'spark') {
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(Math.atan2(this.vy, this.vx));
-        ctx.fillRect(-this.size * 1.5, -this.size * 0.3, this.size * 3, this.size * 0.6);
+        const len = this.size * (1 + Math.sqrt(this.vx * this.vx + this.vy * this.vy) * 0.3);
+        ctx.fillRect(-len * 1.2, -this.size * 0.25, len * 2.4, this.size * 0.5);
         ctx.restore();
       } else if (this.type === 'star') {
         ctx.save();
         ctx.translate(this.x, this.y);
-        ctx.rotate(performance.now() * 0.003);
-        const s = this.size * this.life;
+        ctx.rotate(this.rotation);
+        const s = this.size * alpha;
         for (let i = 0; i < 4; i++) {
-          ctx.fillRect(-s * 0.15, -s, s * 0.3, s * 2);
+          ctx.fillRect(-s * 0.12, -s, s * 0.24, s * 2);
           ctx.rotate(Math.PI / 4);
         }
         ctx.restore();
+      } else if (this.type === 'ring') {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * (2 - alpha), 0, Math.PI * 2);
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = Math.max(1, this.size * alpha * 0.4);
+        ctx.globalAlpha = alpha * 0.5;
+        ctx.stroke();
+      } else if (this.type === 'diamond') {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        const d = this.size * alpha;
+        ctx.beginPath();
+        ctx.moveTo(0, -d);
+        ctx.lineTo(d * 0.6, 0);
+        ctx.lineTo(0, d);
+        ctx.lineTo(-d * 0.6, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
       } else {
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, this.size * alpha, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.globalAlpha = 1;
@@ -1417,54 +1505,99 @@
     const rect = cellEl.getBoundingClientRect();
     const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
     const pal = COLOR_PALETTE.find(c => c.main === color) || { main:color, light:color, glow:color };
-    for (let i = 0; i < 8; i++) {
-      particles.push(new Particle(cx, cy, pal.main, { speed:3+Math.random()*5, size:2+Math.random()*4, gravity:0.06, decay:0.02+Math.random()*0.015 }));
+    // Main burst particles - more and with glow
+    for (let i = 0; i < 10; i++) {
+      particles.push(new Particle(cx, cy, pal.main, {
+        speed:3+Math.random()*6, size:2.5+Math.random()*4.5, gravity:0.06,
+        decay:0.018+Math.random()*0.014, glow:true, trail:i < 4
+      }));
     }
-    for (let i = 0; i < 4; i++) {
-      particles.push(new Particle(cx, cy, pal.light||'#fff', { speed:1+Math.random()*3, size:1.5+Math.random()*2, gravity:0.02, decay:0.025, type:'spark' }));
+    // Bright spark trails
+    for (let i = 0; i < 5; i++) {
+      particles.push(new Particle(cx, cy, pal.light||'#fff', {
+        speed:2+Math.random()*4, size:1.5+Math.random()*2.5, gravity:0.02,
+        decay:0.022, type:'spark', trail:true
+      }));
     }
+    // Small expanding ring
+    particles.push(new Particle(cx, cy, pal.glow || pal.light || '#fff', {
+      speed:0, size:rect.width * 0.3, gravity:0, decay:0.04,
+      type:'ring', friction:1
+    }));
     ensureFxLoop();
   }
 
   function spawnComboExplosion(x, y, comboN) {
     if (settings.reducedMotion) return;
-    const count = Math.min(comboN * 12, 60);
-    const colors = ['#ffd93d','#ff6b6b','#6bcb77','#4d96ff','#a855f7','#fff'];
+    const count = Math.min(comboN * 15, 80);
+    const colors = ['#ffd93d','#ff6b6b','#6bcb77','#4d96ff','#a855f7','#fff','#f97316','#ec4899'];
     for (let i = 0; i < count; i++) {
+      const type = Math.random() > 0.6 ? 'spark' : Math.random() > 0.5 ? 'diamond' : 'circle';
       particles.push(new Particle(x, y, colors[i % colors.length], {
-        speed:4+Math.random()*8, size:2+Math.random()*5, gravity:0.1,
-        decay:0.012+Math.random()*0.01, type:Math.random()>0.5?'spark':'circle',
+        speed:5+Math.random()*10, size:2+Math.random()*5, gravity:0.1,
+        decay:0.01+Math.random()*0.008, type, glow:Math.random() > 0.5, trail:type === 'spark',
       }));
     }
+    // Central burst ring
+    for (let i = 0; i < 2 + comboN; i++) {
+      particles.push(new Particle(x, y, '#fff', {
+        speed:0, size:10 + i * 8, gravity:0, decay:0.03 + i * 0.008,
+        type:'ring', friction:1
+      }));
+    }
+    // Screen flash for combo >= 3
+    if (comboN >= 3) triggerScreenFlash(colors[comboN % colors.length]);
     ensureFxLoop();
   }
 
   function spawnPerfectClearFX() {
     if (settings.reducedMotion) return;
     const cx = fxW / 2, cy = fxH / 2;
-    const golds = ['#ffd93d','#ffe066','#fff','#f97316','#ffd93d'];
-    for (let i = 0; i < 80; i++) {
+    const golds = ['#ffd93d','#ffe066','#fff','#f97316','#ffd93d','#ffab40'];
+    for (let i = 0; i < 100; i++) {
+      const type = i < 30 ? 'spark' : i < 50 ? 'star' : i < 70 ? 'diamond' : 'circle';
       particles.push(new Particle(cx, cy, golds[i % golds.length], {
-        speed:5+Math.random()*10, size:3+Math.random()*6, gravity:0.05,
-        decay:0.008+Math.random()*0.008, type:Math.random()>0.3?'spark':'circle',
+        speed:6+Math.random()*12, size:3+Math.random()*7, gravity:0.05,
+        decay:0.006+Math.random()*0.006, type,
+        glow:i < 40, trail:type === 'spark',
       }));
     }
+    // Multiple expanding rings
+    for (let i = 0; i < 4; i++) {
+      particles.push(new Particle(cx, cy, '#ffd93d', {
+        speed:0, size:20 + i * 15, gravity:0, decay:0.015 + i * 0.005,
+        type:'ring', friction:1
+      }));
+    }
+    triggerScreenFlash('#ffd93d');
     ensureFxLoop();
   }
 
   function spawnConfetti() {
     if (settings.reducedMotion) return;
     const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
-    const colors = ['#ffd93d','#ff6b6b','#6bcb77','#4d96ff','#a855f7','#ec4899','#fff'];
-    for (let i = 0; i < 50; i++) {
-      const angle = (Math.PI * 2 * i / 50) + (Math.random() - 0.5);
+    const colors = ['#ffd93d','#ff6b6b','#6bcb77','#4d96ff','#a855f7','#ec4899','#fff','#f97316'];
+    for (let i = 0; i < 70; i++) {
+      const angle = (Math.PI * 2 * i / 70) + (Math.random() - 0.5);
+      const type = i % 4 === 0 ? 'star' : i % 3 === 0 ? 'diamond' : Math.random() > 0.5 ? 'spark' : 'circle';
       particles.push(new Particle(cx, cy, colors[i % colors.length], {
-        angle, speed:6+Math.random()*10, size:3+Math.random()*5,
-        gravity:0.12, decay:0.006+Math.random()*0.006, friction:0.99,
-        type:Math.random()>0.5?'spark':'circle',
+        angle, speed:7+Math.random()*12, size:3+Math.random()*6,
+        gravity:0.12, decay:0.005+Math.random()*0.005, friction:0.99,
+        type, glow:i < 20, trail:type === 'spark',
       }));
     }
+    triggerScreenFlash('#fff');
     ensureFxLoop();
+  }
+
+  // Screen flash effect
+  function triggerScreenFlash(color) {
+    const flashEl = document.getElementById('screen-flash');
+    if (!flashEl) return;
+    flashEl.style.background = 'radial-gradient(ellipse at center, ' + color + ' 0%, transparent 70%)';
+    flashEl.classList.remove('flash');
+    void flashEl.offsetWidth; // force reflow
+    flashEl.classList.add('flash');
   }
 
   // Seasonal particle effects
@@ -1489,10 +1622,20 @@
 
   function renderFx() {
     fxCtx.clearRect(0, 0, fxW, fxH);
+    // Use 'lighter' composite for additive bloom on glow particles
     for (let i = particles.length - 1; i >= 0; i--) {
       if (!particles[i].update()) { particles.splice(i, 1); }
-      else { particles[i].draw(fxCtx); }
+      else {
+        if (particles[i].glow) {
+          fxCtx.globalCompositeOperation = 'lighter';
+        } else {
+          fxCtx.globalCompositeOperation = 'source-over';
+        }
+        particles[i].draw(fxCtx);
+      }
     }
+    fxCtx.globalCompositeOperation = 'source-over';
+    fxCtx.globalAlpha = 1;
     if (particles.length > 0) { requestAnimationFrame(renderFx); }
     else { fxAnimRunning = false; }
   }
@@ -1782,6 +1925,13 @@
         if (val) {
           cell.style.background = val;
           cell.classList.add('filled');
+          // Set per-cell glow color from palette
+          const palEntry = COLOR_PALETTE.find(p => p.main === val);
+          if (palEntry && palEntry.glow) {
+            cell.style.setProperty('--cell-glow', palEntry.glow);
+          } else {
+            cell.style.setProperty('--cell-glow', val.replace(')', ',0.25)').replace('rgb(', 'rgba('));
+          }
           // Accessibility: add pattern overlay
           if (settings.patterns) {
             const colorIdx = COLORS.indexOf(val);
@@ -1793,8 +1943,9 @@
         } else {
           cell.style.background = '';
           cell.classList.remove('filled', 'a11y-pattern');
+          cell.style.removeProperty('--cell-glow');
         }
-        cell.classList.remove('preview', 'clearing', 'row-hint', 'col-hint', 'invalid-preview', 'just-placed', 'bomb-target', 'bomb-area');
+        cell.classList.remove('preview', 'clearing', 'clear-shimmer', 'row-hint', 'col-hint', 'invalid-preview', 'just-placed', 'bomb-target', 'bomb-area');
         cell.style.opacity = '';
       }
     }
@@ -1899,6 +2050,9 @@
     });
     ghostEl.appendChild(grid);
     ghostEl.style.display = 'block';
+    // Set ghost glow color from piece palette
+    const ghostPal = COLOR_PALETTE.find(p => p.main === dragPiece.color);
+    ghostEl.style.setProperty('--ghost-glow', ghostPal ? ghostPal.glow : 'rgba(255,255,255,0.15)');
     ghostHalfW = ghostEl.offsetWidth / 2;
     ghostH = ghostEl.offsetHeight;
 
@@ -2121,9 +2275,23 @@
     let delay = 0;
     toClear.forEach(idx => {
       const cell = children[idx];
-      setTimeout(() => { cell.classList.add('clearing'); spawnClearParticles(cell, cell.style.background || '#ffd93d'); }, delay);
+      // Add shimmer sweep before clearing animation
+      setTimeout(() => {
+        cell.classList.add('clear-shimmer');
+        cell.style.overflow = 'hidden';
+      }, delay);
+      setTimeout(() => {
+        cell.classList.remove('clear-shimmer');
+        cell.style.overflow = '';
+        cell.classList.add('clearing');
+        spawnClearParticles(cell, cell.style.background || '#ffd93d');
+      }, delay + 80);
       delay += 12;
     });
+    // Small screen flash for line clears
+    if (toClear.size >= BOARD_SIZE) {
+      triggerScreenFlash('rgba(255,255,255,0.3)');
+    }
     setTimeout(() => {
       rowsC.forEach(r => { for (let c = 0; c < BOARD_SIZE; c++) board[r][c] = 0; });
       colsC.forEach(c => { for (let r = 0; r < BOARD_SIZE; r++) board[r][c] = 0; });
@@ -2755,7 +2923,10 @@
   // BOOT
   // ==================================================================
   function boot() {
-    initBgCanvas(); initFxCanvas(); renderBg();
+    // Defer heavy canvas init until after splash is dismissed to avoid tile memory pressure
+    // Just set minimal sizes during splash
+    bgCanvas.width = 1; bgCanvas.height = 1;
+    fxCanvas.width = 1; fxCanvas.height = 1;
     bestScoreEl.textContent = bestScore;
     initSettings();
     updateStreak();
@@ -2791,10 +2962,11 @@
       initBoard(); renderBoard(); generatePieces();
     }
 
-    // Splash animated blocks
+    // Splash animated blocks (fewer to avoid tile memory pressure on high-DPI)
     const splashBlocksContainer = document.getElementById('splash-blocks');
     if (splashBlocksContainer) {
-      for (let i = 0; i < 20; i++) {
+      const splashCount = (window.devicePixelRatio || 1) > 2 ? 8 : 12;
+      for (let i = 0; i < splashCount; i++) {
         const block = document.createElement('div');
         block.className = 'splash-block';
         const size = 14 + Math.random() * 32;
@@ -2815,6 +2987,8 @@
     function dismissSplash() {
       if (!splashReady) return;
       splashReady = false;
+      // Now that splash is going away, init the heavy canvases
+      initBgCanvas(); initFxCanvas(); renderBg();
       splashEl.classList.add('hide');
       document.getElementById('game-container').classList.add('show');
       if (audioCtx) audioCtx.resume();
